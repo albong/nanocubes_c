@@ -17,5 +17,12 @@ NcValueChain *createGeoChain(int x, int y, size_t depth){
 }
 
 NcValueChain *createCatChain(int category){
-    return NULL;
+    NcValueChain *result = malloc(sizeof(NcValueChain));
+    result->type = CAT;
+    result->num = 2;
+    CatData *data = malloc(sizeof(CatData) * 2);
+    data[0].category = -1;
+    data[1].category = category;
+    result->data = data;
+    return result;
 }

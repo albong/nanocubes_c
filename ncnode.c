@@ -176,6 +176,7 @@ NcNode *newProperChild(NcNode *self, NcValueChain *values, int index){
     }
 
     self->numChildren++;
+    self->isShared = realloc(self->isShared, sizeof(int) * self->numChildren);
     self->isShared[self->numChildren-1] = 0;
     self->children = realloc(self->children, sizeof(NcNode *) * self->numChildren);
     self->children[self->numChildren-1] = result;

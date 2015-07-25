@@ -1,22 +1,28 @@
 #include "nanocube.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 static void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated);
 static NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values);
 
 Nanocube *newNanocube(size_t numSpatialDim, size_t numCategories){
+    printf("Mallocing for cube\n");
     Nanocube *result = malloc(sizeof(Nanocube));
-    int i;    
-
+    int i;
+    
+    printf("Setting dimension sizes\n");
     result->numSpatialDim = numSpatialDim;
     result->numCategories = numCategories;
 //    result->categories = malloc(sizeof(int) * numCategories);
 //    for (i = 0; i < numCategories; i++){
 //        result->categories[i] = categories[i];
 //    }
-    result->root = newGeoNode(0,0,0);
 
+    printf("Creating first node\n");
+    result->root = newGeoNode(0,0,0); //ought to be an if to check what kind of dimension
+
+    printf("Setting dimensions\n");
     result->numDim = numSpatialDim + numCategories;
     result->dimensions = malloc(sizeof(NcDataType) * (numSpatialDim + numCategories));
     for (i = 0; i < result->numDim; i++){
@@ -76,7 +82,7 @@ void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, N
         
         if (update){
             if (dim == nc->numDim){
-                
+                insert(curr, time, 1);
             } else {
                 add(nc, curr->content, x, y, cat, time, dim+1, updatedList, numUpdated);
             }
@@ -96,15 +102,16 @@ NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values){
     NcNode *curr = root;
     NcNode *child = NULL;
     int childInd = -1;
-    
+
     int i;
     for (i = 0; i < values->num; i++){
         childInd = getMatchingChildInd(curr, values, i);
-        child = curr->children[childInd];
         if (childInd == -1){
             child = newProperChild(curr, values, i);
         } else if (curr->isShared[childInd]){
             child = replaceChild(curr, childInd);
+        } else {
+            child = curr->children[childInd];
         }
         push(stack, child);
         curr = child;

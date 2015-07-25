@@ -1,5 +1,6 @@
 #include "timeseries.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 Timeseries *newTimeseries(){
     Timeseries *result = malloc(sizeof(Timeseries));
@@ -9,8 +10,10 @@ Timeseries *newTimeseries(){
 }
 
 void addToTimeseries(Timeseries *self, int time, unsigned long long count){
-    if (time > self->numBins-1){
-        self->bins = realloc(self->bins, sizeof(unsigned long long) * (self->numBins + 1));
+    if (time+1 > self->numBins){
+        printf("Add new bins\n");
+        self->bins = realloc(self->bins, sizeof(unsigned long long) * (time+1));
+        self->numBins = time + 1;
     }
     self->bins[time] = count;
 }
