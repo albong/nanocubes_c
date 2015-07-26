@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 static void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated);
 static NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values);
@@ -32,10 +33,52 @@ Nanocube *newNanocube(size_t numSpatialDim, size_t numCategories){
     return result; 
 }
 
-void addToNanocube(Nanocube *nc, int x, int y, int cat, int time){
+void addToNanocube(Nanocube *nc, int time, unsigned long long count, ...){
+    va_list input;
+    int i;
+    NcData *data;
+    NcData *curr;
+
+    va_start(input, count);
+    int x = va_arg(input, int);
+    int y = va_arg(input, int);
+    data = newGeoData(x, y, MAX_GEO_DEPTH);
+    curr = data;
+    for (i = 1; i < (nc->numSpatialDim + nc->numCategories); i++){//we always must have at least one spatial dim
+        if (i < nc->numSpatialDim){
+            x = va_arg(input, int);
+            y = va_arg(input, int);
+            curr->next = newGeoData(x, y, MAX_GEO_DEPTH);
+            curr = curr->next;
+        } else {
+            curr->next = newCatData(va_arg(input, int));
+            curr = curr->next;
+        }
+    }
+    va_end(input);
+    curr->next = newTimeData(time, count);
+
+    curr = data;
+    i = 0;
+    while (curr != NULL){
+        if (i < nc->numSpatialDim){
+            printf("Geo: %d,%d,%d\n", ((GeoData *)curr->data)->x, ((GeoData *)curr->data)->y, ((GeoData *)curr->data)->z);
+        } else if (i < (nc->numSpatialDim + nc->numCategories)){
+            printf("Cat: %d\n", ((CatData *)curr->data)->category);
+        } else {
+            printf("Time: %d,%lu\n", ((TimeData *)curr->data)->time, ((TimeData *)curr->data)->count);
+        }
+        i++;
+        curr = curr->next;
+    }
+
     size_t numUpdated = 0;
-    add(nc, nc->root, x, y, cat, time, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed
+//    add(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
 }
+//void addToNanocube(Nanocube *nc, int x, int y, int cat, int time){
+//    size_t numUpdated = 0;
+//    add(nc, nc->root, x, y, cat, time, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed
+//}
 
 void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated){
     NcValueChain *chain;

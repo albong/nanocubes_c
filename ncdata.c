@@ -50,3 +50,33 @@ void printChain(NcValueChain *self){
     }
     printf("\n");
 }
+
+NcData *newGeoData(int x, int y, int z){
+    GeoData *gd = malloc(sizeof(GeoData));
+    gd->x = x;
+    gd->y = y;
+    gd->z = z;
+    NcData *result = malloc(sizeof(NcData));
+    result->next = NULL;
+    result->data = gd;
+    return result;
+}
+
+NcData *newCatData(int category){
+    CatData *cd = malloc(sizeof(CatData));
+    cd->category = category;
+    NcData *result = malloc(sizeof(NcData));
+    result->next = NULL;
+    result->data = cd;
+    return result;
+}
+NcData *newTimeData(int time, unsigned long long count){
+    TimeData *td = malloc(sizeof(TimeData));
+    td->time = time;
+    td->count = count;
+    NcData *result = malloc(sizeof(NcData));
+    result->next = NULL;
+    result->data = td;
+    return result;
+}
+
