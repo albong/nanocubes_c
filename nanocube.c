@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-static void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated);
+//static void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated);
+static void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
 static NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values);
 static void printNode(NcNode *self, int padding, int isShared, int isContent);
 
@@ -58,7 +59,7 @@ void addToNanocube(Nanocube *nc, int time, unsigned long long count, ...){
     va_end(input);
     curr->next = newTimeData(time, count);
 
-    curr = data;
+/*    curr = data;
     i = 0;
     while (curr != NULL){
         if (i < nc->numSpatialDim){
@@ -71,22 +72,17 @@ void addToNanocube(Nanocube *nc, int time, unsigned long long count, ...){
         i++;
         curr = curr->next;
     }
-
+*/
     size_t numUpdated = 0;
-//    add(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
+    add(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
 }
-//void addToNanocube(Nanocube *nc, int x, int y, int cat, int time){
-//    size_t numUpdated = 0;
-//    add(nc, nc->root, x, y, cat, time, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed
-//}
 
-void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated){
+void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
     NcValueChain *chain;
     if (nc->dimensions[dim-1] == GEO){
-        chain = createGeoChain(x, y, MAX_GEO_DEPTH);
-        printChain(chain);
+        chain = createChain(data, GEO, dim-1);
     } else {
-        chain = createCatChain(cat);
+        chain = createChain(data, CAT, dim-1);
     }
     NcNodeStack *stack = trailProperPath(nc, root, chain);
 
@@ -123,9 +119,9 @@ void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, N
         
         if (update){
             if (dim == nc->numDim){
-                insert(curr, time, 1);
+                insertData(curr, getDataAtInd(data, dim-1));
             } else {
-                add(nc, curr->content, x, y, cat, time, dim+1, updatedList, numUpdated);
+                add(nc, curr->content, data, dim+1, updatedList, numUpdated);
             }
             (*numUpdated)++;
             updatedList = realloc(updatedList, sizeof(NcNode *) * (*numUpdated));

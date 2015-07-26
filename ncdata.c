@@ -2,6 +2,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+NcValueChain *createChain(NcData *self, NcDataType type, int dimension){
+    NcValueChain *result = NULL;
+    GeoData *gd;
+    CatData *cd;
+    NcData *data = getDataAtInd(self, dimension);
+    if (type == GEO){
+        gd = (GeoData *)data->data;
+        result = createGeoChain(gd->x, gd->y, gd->z);
+    } else if (type == CAT){
+        cd = (CatData *)data->data;
+        result = createCatChain(cd->category);
+    }
+    return result;
+}
+
 NcValueChain *createGeoChain(int x, int y, size_t depth){
     NcValueChain *result = malloc(sizeof(NcValueChain));
     result->type = GEO;
@@ -80,3 +95,11 @@ NcData *newTimeData(int time, unsigned long long count){
     return result;
 }
 
+NcData *getDataAtInd(NcData *self, int index){
+    int i;
+    NcData *curr = self;
+    for (i = 0; i < index; i++){
+        curr = curr->next;
+    }
+    return curr;
+}

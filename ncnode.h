@@ -59,5 +59,6 @@ NcNode *shallowCopyNode(NcNode *self);
 int nodeInList(NcNode *self, NcNode **list, size_t size);
 
 void insert(NcNode *self, int time, unsigned long long count);
+void insertData(NcNode *self, NcData *data);
 
 #endif

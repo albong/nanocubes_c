@@ -31,6 +31,7 @@ typedef struct TimeData {
     unsigned long long count;
 } TimeData;
 
+NcValueChain *createChain(NcData *self, NcDataType type, int dimension);
 NcValueChain *createGeoChain(int x, int y, size_t depth);
 NcValueChain *createCatChain(int category);
 void printChain(NcValueChain *self);
@@ -38,5 +39,6 @@ void printChain(NcValueChain *self);
 NcData *newGeoData(int x, int y, int z);
 NcData *newCatData(int category);
 NcData *newTimeData(int time, unsigned long long count);
+NcData *getDataAtInd(NcData *self, int index);
 
 #endif

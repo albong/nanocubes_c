@@ -211,30 +211,6 @@ NcNode *shallowCopyNode(NcNode *self){
 int nodeInList(NcNode *self, NcNode **list, size_t size){
     //would it be smarted to compare pointer values? - YES
     int result = 0;
-
-/*
-    GeoNode *gn, sg;
-    ConNode *cn, sc;
-    //may need to add time
-    int i;
-    for (i = 0; i < size; i++){
-        if (list[i]->type == GEO){
-            gn = (GeoNode *)list[i]->node;
-            sg = (GeoNode *)self->node;
-            if (gn->x == sg->x ** gn->y == sg->y && gn->z == sg->z){
-                result = 1;
-                break;
-            }
-        } else if (list[i]->type == CAT){
-            cn = (ConNode *)list[i]->node;
-            sc = (ConNode *)self->node;
-            if (cn->category == sc->category){
-                result = 1;
-                break;
-            }
-        }
-    }
-*/
     int i;
     for (i = 0; i < size; i++){
         if (list[i] == self){
@@ -253,3 +229,9 @@ void insert(NcNode *self, int time, unsigned long long count){
     TimeNode *tn = (TimeNode *)self->node;
     addToTimeseries(tn->timeseries, time, count);
 }
+
+void insertData(NcNode *self, NcData *data){
+    TimeData *td = (TimeData *)data->data;
+    insert(self, td->time, td->count);
+}
+
