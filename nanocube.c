@@ -62,7 +62,7 @@ void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, N
             if (dim == nc->numDim){
                 curr->content = newTimeNode();
             } else {
-                if (nc->dimensions[dim-1] == GEO){
+                if (nc->dimensions[dim] == GEO){
                     curr->content = newGeoNode(0,0,0);
                 } else {
                     curr->content = newConNode(-1);
