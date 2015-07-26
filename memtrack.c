@@ -19,9 +19,9 @@ void *trackMalloc(size_t size){
 void *trackRealloc(void *ptr, size_t size){
     void *realPtr = (char *)ptr - SIZE;
     count += (size - *((size_t *)realPtr));
-    void *ptr = realloc(realPtr, size + SIZE);
-    *((size_t *)ptr) = size;
-    return (char *)ptr + SIZE;
+    void *result = realloc(realPtr, size + SIZE);
+    *((size_t *)result) = size;
+    return (char *)result + SIZE;
 }
 
 void trackFree(void *ptr){
