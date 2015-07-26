@@ -11,7 +11,6 @@ Timeseries *newTimeseries(){
 
 void addToTimeseries(Timeseries *self, int time, unsigned long long count){
     if (time+1 > self->numBins){
-        printf("Add new bins\n");
         self->bins = realloc(self->bins, sizeof(unsigned long long) * (time+1));
         self->numBins = time + 1;
     }

@@ -1,5 +1,6 @@
 #include "ncdata.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 NcValueChain *createGeoChain(int x, int y, size_t depth){
     NcValueChain *result = malloc(sizeof(NcValueChain));
@@ -25,4 +26,28 @@ NcValueChain *createCatChain(int category){
     data[1].category = category;
     result->data = data;
     return result;
+}
+
+void printChain(NcValueChain *self){
+    int i;
+    GeoData gd;
+    CatData cd;
+
+    for (i = 0; i < self->num; i++){
+        if (self->type == GEO){
+            gd = ((GeoData *)self->data)[i];
+            printf("%d,%d,%d", gd.x, gd.y, gd.z);
+        } else if (self->type == CAT){
+            cd = ((CatData *)self->data)[i];
+            printf("%d", cd.category);
+        } else {
+            printf("Chain with invalid type!");
+            break;
+        }
+
+        if (i != ((int)self->num) - 1){
+            printf(" -> ");
+        }
+    }
+    printf("\n");
 }

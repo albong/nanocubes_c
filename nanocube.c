@@ -5,24 +5,21 @@
 
 static void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated);
 static NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values);
+static void printNode(NcNode *self, int padding, int isShared, int isContent);
 
 Nanocube *newNanocube(size_t numSpatialDim, size_t numCategories){
-    printf("Mallocing for cube\n");
     Nanocube *result = malloc(sizeof(Nanocube));
     int i;
     
-    printf("Setting dimension sizes\n");
     result->numSpatialDim = numSpatialDim;
     result->numCategories = numCategories;
-//    result->categories = malloc(sizeof(int) * numCategories);
-//    for (i = 0; i < numCategories; i++){
-//        result->categories[i] = categories[i];
-//    }
 
-    printf("Creating first node\n");
-    result->root = newGeoNode(0,0,0); //ought to be an if to check what kind of dimension
+    if (numSpatialDim > 0){
+        result->root = newGeoNode(0,0,0);
+    } else {
+        result->root = newConNode(-1);
+    }
 
-    printf("Setting dimensions\n");
     result->numDim = numSpatialDim + numCategories;
     result->dimensions = malloc(sizeof(NcDataType) * (numSpatialDim + numCategories));
     for (i = 0; i < result->numDim; i++){
@@ -44,6 +41,7 @@ void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, N
     NcValueChain *chain;
     if (nc->dimensions[dim-1] == GEO){
         chain = createGeoChain(x, y, MAX_GEO_DEPTH);
+        printChain(chain);
     } else {
         chain = createCatChain(cat);
     }
@@ -117,4 +115,43 @@ NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values){
         curr = child;
     }
     return stack;
+}
+
+void printNanocube(Nanocube *self){
+    printf("Num spatial dimensions: %d\n", self->numSpatialDim);//size_t is not a %d
+    printf("Num categorical dimensions: %d\n", self->numCategories);//size_t is not a %d
+    NcNode *curr = self->root;
+    printNode(curr, 0, 0, 0);
+}
+
+void printNode(NcNode *self, int padding, int isShared, int isContent){
+    if (self == NULL){
+        return;
+    }
+
+    int i;
+    for (i = 0; i < padding; i++){
+        printf(" ");
+    }
+
+    GeoNode *gn;
+    ConNode *cn;
+    TimeNode *tn;
+    char shared = isShared ? 'S' : 'P';
+    char content = isContent ? 'C' : 'N';
+    if (self->type == GEO){
+        gn = (GeoNode *)self->node;
+        printf("%c : GEO : %d,%d,%d : %c : %p\n", content, gn->x, gn->y, gn->z, shared, self);
+    } else if (self->type == CAT) {
+        cn = (ConNode *)self->node;
+        printf("%c : CAT : %d : %c : %p\n", content, cn->category, shared, self);
+    } else { //TIME
+        tn = (TimeNode *)self->node;
+        printf("%c : TIME :: %c : %p\n", content, shared, self);
+    }
+
+    for (i = 0; i < self->numChildren; i++){
+        printNode(self->children[i], padding+1, self->isShared[i], 0);
+    }
+    printNode(self->content, padding+1, self->sharedContent, 1);
 }

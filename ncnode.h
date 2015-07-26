@@ -22,7 +22,7 @@ typedef struct GeoNode {
     int z;
 } GeoNode;
 
-typedef struct ConNode {
+typedef struct ConNode { //rename to CatNode
     int category;
 } ConNode;
 

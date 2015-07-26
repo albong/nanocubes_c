@@ -23,5 +23,6 @@ typedef struct CatData {
 
 NcValueChain *createGeoChain(int x, int y, size_t depth);
 NcValueChain *createCatChain(int category);
+void printChain(NcValueChain *self);
 
 #endif

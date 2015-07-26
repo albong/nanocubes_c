@@ -7,4 +7,5 @@ int main(int argc, const char *argv[]){
     printf("Made a nanocube!\n");
     addToNanocube(nc, 1, 5, 1, 2);
     printf("Added to the nanocube!\n");
+    printNanocube(nc);
 }
