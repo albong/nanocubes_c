@@ -1,5 +1,5 @@
 #ifndef NC_NODE_H
-#define NC_NDOE_H
+#define NC_NODE_H
 
 #include "timeseries.h"
 #include "ncdata.h"
