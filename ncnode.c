@@ -224,10 +224,10 @@ int nodeInList(NcNode *self, NcNode **list, size_t size){
 void insert(NcNode *self, int time, unsigned long long count){
     if (self->type != TIME){
         insert(self->content, time, count);
-        return;
+    } else {
+        TimeNode *tn = (TimeNode *)self->node;
+        addToTimeseries(tn->timeseries, time, count);
     }
-    TimeNode *tn = (TimeNode *)self->node;
-    addToTimeseries(tn->timeseries, time, count);
 }
 
 void insertData(NcNode *self, NcData *data){

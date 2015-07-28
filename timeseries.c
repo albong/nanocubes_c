@@ -16,3 +16,12 @@ void addToTimeseries(Timeseries *self, int time, unsigned long long count){
     }
     self->bins[time] = count;
 }
+
+void printTimeseries(Timeseries *self){
+    int i;
+    printf("numBins: %d; ", self->numBins);
+    for (i = 0; i < self->numBins; i++){
+        printf("%d:%lu ", i, self->bins[i]);
+    }
+    printf("\n");
+}

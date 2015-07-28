@@ -14,7 +14,7 @@ NcQuery *newQuery(Nanocube *nc){
     NcQuery *result = malloc(sizeof(NcQuery));
     result->data = malloc(sizeof(NcData));
     result->data->data = NULL;
-    result->drilldown = calloc((nc->numSpatialDim + nc->numCategories + 1), sizeof(int));
+    result->type = malloc(sizeof(NcDataType) * (nc->numSpatialDim + nc->numCategories + 1));
 
     NcData *curr = result->data;
     int i;
@@ -22,7 +22,14 @@ NcQuery *newQuery(Nanocube *nc){
         curr->next = malloc(sizeof(NcData));
         curr = curr->next;
         curr->data = NULL;
+
+        if (i < nc->numSpatialDim){
+            result->type[i] = GEO;
+        } else {
+            result->type[i] = CAT;
+        }
     }
+    result->type[i] = TIME;
     //we've covered the geo and cat dimensions, now we need to cover the time dimension
     curr->next = malloc(sizeof(NcQuery));
     curr = curr->next;
@@ -37,18 +44,21 @@ NcQuery *newQuery(Nanocube *nc){
 
 void addGeoConstraint(NcQuery *self, int dim, GeoData *gd, int drilldown){
     NcData *constraint = getDataAtInd(self->data, dim);
+    constraint->data = malloc(sizeof(GeoData));
     memcpy(constraint->data, gd, sizeof(GeoData));
     self->drilldown[dim] = drilldown;
 }
 
 void addCatConstraint(NcQuery *self, int dim, CatData *cd, int drilldown){
     NcData *constraint = getDataAtInd(self->data, dim);
+    constraint->data = malloc(sizeof(CatData));
     memcpy(constraint->data, cd, sizeof(CatData));
     self->drilldown[dim] = drilldown;
 }
 
 void addTimeConstraint(NcQuery *self, int dim, TimeConstraint *tc, int drilldown){
     NcData *constraint = getDataAtInd(self->data, dim);
+    constraint->data = malloc(sizeof(TimeConstraint));
     memcpy(constraint->data, tc, sizeof(TimeConstraint));
     self->drilldown[dim] = drilldown;
 }
@@ -66,6 +76,7 @@ void geoQuery(NcQuery *self, int currDim, NcNode *root){
     NcData *constraint = getDataAtInd(self->data, currDim);
 
     if (constraint->data == NULL){
+        printf("geo - no constraint\n");
         if (self->type[currDim+1] == GEO){
             geoQuery(self, currDim+1, root->content);
         } else if (self->type[currDim+1] == CAT){
@@ -74,8 +85,10 @@ void geoQuery(NcQuery *self, int currDim, NcNode *root){
             timeQuery(self, currDim+1, root->content);
         }
     } else if (self->drilldown[currDim] == 1){
+        printf("geo - run tile\n");
         //tile       
     } else {
+        printf("geo - rollup\n");
         //find the correct child and continue - does not handle region queries
         gdConstraint = (GeoData *)constraint->data;
         curr = root;
@@ -119,6 +132,7 @@ void catQuery(NcQuery *self, int currDim, NcNode *root){
     NcData *constraint = getDataAtInd(self->data, currDim);
     
     if (constraint->data == NULL){
+        printf("cat - no constraint\n");
         if (self->type[currDim+1] == GEO){
             geoQuery(self, currDim+1, root->content);
         } else if (self->type[currDim+1] == CAT){
@@ -128,7 +142,9 @@ void catQuery(NcQuery *self, int currDim, NcNode *root){
         }
     } else if (self->drilldown[currDim] == 1){
         //print for each category - need rollup
+        printf("cat - break out by category\n");
     } else {
+        printf("cat - select from category\n");
         cdConstraint = (CatData *)constraint->data;
         next = NULL;
         for (i = 0; i < root->numChildren; i++){
@@ -160,20 +176,23 @@ void timeQuery(NcQuery *self, int currDim, NcNode *root){
 
     if (self->drilldown[currDim]){
         //return timeseries
-    } else if (tc != NULL){
+        printf("time - return timeseries\n");
+    } else {
         //sum data across this time
+        printf("time - return total\n");
         sum = 0;
-        start = tc->start;
-        end = tc->numBins * tc->binSize;
-        end = (end >= tn->timeseries->numBins) ? tn->timeseries->numBins - 1 : end;
-        
+        if (tc != NULL){
+            start = tc->start;
+            end = tc->numBins * tc->binSize;
+            end = (end >= tn->timeseries->numBins) ? tn->timeseries->numBins - 1 : end;
+        } else {
+            start = 0;
+            end = tn->timeseries->numBins - 1;
+        }
         for (i = start; i <= end; i++){
             sum += tn->timeseries->bins[i]; 
         }
-        
         printf("%lu\n", sum);
-    } else {
-        printf("0\n");
     }
 }
 

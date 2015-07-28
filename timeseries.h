@@ -10,5 +10,6 @@ typedef struct Timeseries {
 
 Timeseries *newTimeseries();
 void addToTimeseries(Timeseries *self, int time, unsigned long long count);
+void printTimeseries(Timeseries *self);
 
 #endif

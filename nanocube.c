@@ -119,7 +119,7 @@ void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList
         
         if (update){
             if (dim == nc->numDim){
-                insertData(curr, getDataAtInd(data, dim-1));
+                insertData(curr, getDataAtInd(data, dim));
             } else {
                 add(nc, curr->content, data, dim+1, updatedList, numUpdated);
             }
