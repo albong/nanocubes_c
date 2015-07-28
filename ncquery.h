@@ -26,6 +26,10 @@ typedef struct TileData {
 
 NcQuery *newQuery(Nanocube *nc);
 void addGeoConstraint(NcQuery *self, int dim, GeoData *gd, int drilldown);
+void addCatConstraint(NcQuery *self, int dim, CatData *cd, int drilldown);
+void addTimeConstraint(NcQuery *self, int dim, TimeConstraint *tc, int drilldown);
+void query(Nanocube *nc, NcQuery *query);
+
 void tile(Nanocube *nc, NcQuery *query);
 TileData *tileDrillDown(NcNode *root, int x, int y, int z);
 
