@@ -1,4 +1,6 @@
 #include "nanocube.h"
+#include "ncquery.h"
+#include "ncdata.h"
 #include <stdio.h>
 
 int main(int argc, const char *argv[]){
@@ -9,4 +11,10 @@ int main(int argc, const char *argv[]){
     addToNanocube(nc, 2, 1, 1, 5, 1);
     printf("Added to the nanocube!\n");
     printNanocube(nc);
+
+
+    //query testing
+    NcQuery *q = newQuery(nc);
+    addCatConstraint(q, 1, (CatData *)newCatData(1)->data, 0);
+    query(nc, q);    
 }
