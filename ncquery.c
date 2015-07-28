@@ -165,35 +165,83 @@ void catQuery(NcQuery *self, int currDim, NcNode *root){
     }
 }
 
-void timeQuery(NcQuery *self, int currDim, NcNode *root){
+TimeResult *timeQuery(NcQuery *self, int currDim, NcNode *root){
     //if constraint is null and no drilldown, then nothing, otherwise there are cases
     NcData *constraint = getDataAtInd(self->data, currDim);
     TimeConstraint *tc = (TimeConstraint *)constraint->data;
-    int start, end;
-    int i;
-    unsigned long long sum;
     TimeNode * tn = (TimeNode *)root->node;
+    TimeResult *result = malloc(sizeof(TimeResult));
+    result->num = 0;
+    result->start = NULL;
+    result->end = NULL;
+    result->count = NULL;
 
+    int numBins;
+    int binSize;
+    int start;
+    int end;
     if (self->drilldown[currDim]){
         //return timeseries
-        printf("time - return timeseries\n");
+        printf("time - return series\n");
+        if (tc != NULL){
+            //only bin as in the constraint
+            start = tc->start;
+            end = tc->start + (tc->binSize * tc->numBins) - 1;
+            binSize = tc->binSize;
+            numBins = tc->numBins;
+        } else {
+            //bin size is 1
+            start = 0;
+            end = tn->timeseries->numBins - 1;
+            binSize = 1;
+            numBins = tn->timeseries->numBins;
+        }
     } else {
         //sum data across this time
         printf("time - return total\n");
-        sum = 0;
         if (tc != NULL){
+            //total in range
             start = tc->start;
-            end = tc->numBins * tc->binSize;
-            end = (end >= tn->timeseries->numBins) ? tn->timeseries->numBins - 1 : end;
+            end = tc->start + (tc->binSize * tc->numBins) - 1;
+            binSize = end - start + 1;
+            numBins = 1;
         } else {
+            //total overall
             start = 0;
             end = tn->timeseries->numBins - 1;
+            binSize = tn->timeseries->numBins;
+            numBins = 1;
         }
-        for (i = start; i <= end; i++){
-            sum += tn->timeseries->bins[i]; 
-        }
-        printf("%lu\n", sum);
     }
+    
+    result->num = numBins;
+    result->start = malloc(numBins * sizeof(int));
+    result->end = malloc(numBins * sizeof(int));
+    result->count = calloc(numBins, sizeof(unsigned long long));
+
+    int i;
+    int count = 0;
+    int currBin = 0;
+    for (i = start; i <= end; i++){
+        if (count == 0){
+            result->start[currBin] = i;
+        }
+        result->count[currBin] += getCountAtTime(tn->timeseries, i);
+        count++;
+        if (count == binSize){
+            result->end[currBin] = i;
+            currBin++;
+            count = 0;
+        }
+    }
+
+    printf("[");
+    for (i = 0; i < result->num; i++){
+        printf("%d,%d,%lu ", result->start[i], result->end[i], result->count[i]);
+    }
+    printf("]\n");
+
+    return result;
 }
 
 

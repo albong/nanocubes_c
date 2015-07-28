@@ -17,6 +17,14 @@ void addToTimeseries(Timeseries *self, int time, unsigned long long count){
     self->bins[time] = count;
 }
 
+unsigned long long getCountAtTime(Timeseries *self, int time){
+    unsigned long long result = 0;
+    if (time < self->numBins){
+        result = self->bins[time];
+    }
+    return result;
+}
+
 void printTimeseries(Timeseries *self){
     int i;
     printf("numBins: %d; ", self->numBins);
