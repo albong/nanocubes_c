@@ -197,16 +197,12 @@ TimeResult *rollupTime(TimeResult **results){
     //make new and free the old
 }
 
-TimeResult *timeQuery(NcQuery *self, int currDim, NcNode *root){
+NcResult *timeQuery(NcQuery *self, int currDim, NcNode *root){
     //if constraint is null and no drilldown, then nothing, otherwise there are cases
     NcData *constraint = getDataAtInd(self->data, currDim);
     TimeConstraint *tc = (TimeConstraint *)constraint->data;
     TimeNode * tn = (TimeNode *)root->node;
-    TimeResult *result = malloc(sizeof(TimeResult));
-    result->num = 0;
-    result->start = NULL;
-    result->end = NULL;
-    result->count = NULL;
+    NcResult *result = newResult();
 
     int numBins;
     int binSize;
@@ -246,37 +242,42 @@ TimeResult *timeQuery(NcQuery *self, int currDim, NcNode *root){
         }
     }
     
-    result->num = numBins;
-    result->start = malloc(numBins * sizeof(int));
-    result->end = malloc(numBins * sizeof(int));
-    result->count = calloc(numBins, sizeof(unsigned long long));
+    result->count = numBins;
+    result->children = malloc(numBins * sizeof(NcResult *));
 
     int i;
     int count = 0;
     int currBin = 0;
     for (i = start; i <= end; i++){
         if (count == 0){
-            result->start[currBin] = i;
+            result->children[currBin] = newResult();
+            result->children[currBin]->addr.dates.start = i;
         }
-        result->count[currBin] += getCountAtTime(tn->timeseries, i);
+        result->children[i]->count += getCountAtTime(tn->timeseries, i);
         count++;
         if (count == binSize){
-            result->end[currBin] = i;
+            result->children[currBin]->addr.dates.end = i;
             currBin++;
             count = 0;
         }
     }
 
     printf("[");
-    for (i = 0; i < result->num; i++){
-        printf("%d,%d,%lu ", result->start[i], result->end[i], result->count[i]);
+    for (i = 0; i < result->count; i++){
+        printf("%d,%d,%lu ", result->children[i]->addr.dates.start, result->children[i]->addr.dates.end, result->children[i]->count);
     }
     printf("]\n");
 
     return result;
 }
 
-
+NcResult *newResult(){
+    NcResult *result = malloc(sizeof(NcResult));
+    result->children = NULL;
+    result->count = 0;
+    result->addr.category = 0;
+    return result;
+}
 
 
 

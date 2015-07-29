@@ -32,9 +32,16 @@ typedef struct TimeResult {//replace this with NcResult
 } TimeResult;
 
 typedef struct NcResult {
-    struct NcResult **children;
-    unsigned int addr; //replace this with pair of size_t's
-    TimeResult *data;
+    struct NcResult **children; //array - can we union this too?
+//    unsigned int addr; //replace this with pair of size_t's?
+    union {
+        int category;
+        struct {
+            int start;
+            int end;
+        } dates;
+    } addr;
+    unsigned long long count;
 } NcResult;
 
 NcQuery *newQuery(Nanocube *nc);
@@ -49,8 +56,8 @@ TileData *tileDrillDown(NcNode *root, int x, int y, int z);
 void geoQuery(NcQuery *self, int currDim, NcNode *root);
 NcResult *catQuery(NcQuery *self, int currDim, NcNode *root);
 TimeResult *rollupTime(TimeResult **results);
-TimeResult *timeQuery(NcQuery *self, int currDim, NcNode *root);
-
+NcResult *timeQuery(NcQuery *self, int currDim, NcNode *root);
+NcResult *newResult();
 
 
 #endif
