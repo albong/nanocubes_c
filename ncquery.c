@@ -124,13 +124,13 @@ void geoQuery(NcQuery *self, int currDim, NcNode *root){
     }
 }
 
-void catQuery(NcQuery *self, int currDim, NcNode *root){
+NcResult *catQuery(NcQuery *self, int currDim, NcNode *root){
     int i;
     ConNode *cn;
     CatData *cdConstraint;
     NcNode *next;
     NcData *constraint = getDataAtInd(self->data, currDim);
-    
+ /*   
     if (constraint->data == NULL){
         printf("cat - no constraint\n");
         if (self->type[currDim+1] == GEO){
@@ -163,6 +163,38 @@ void catQuery(NcQuery *self, int currDim, NcNode *root){
             timeQuery(self, currDim+1, next->content);
         }
     }
+*/
+
+    NcResult *result;
+    if (self->drilldown[currDim] == 1){
+        if(constraint->data == NULL){
+            //return new result where each child has next query level
+        } else {
+            //same as before but only for the specified children
+        }
+    } else {
+        if(constraint->data == NULL){
+            //no constraint, skip
+            if (self->type[currDim+1] == CAT){
+                result = catQuery(self, currDim+1, root->content);
+            } else { //time
+                //ought just be returing the time thingy, assuming that we've hence converted the
+                //type to return the other kind of struct
+                result = malloc(sizeof(NcResult));
+                result->addr = 0;
+                result->children = NULL;
+                result->data = timeQuery(self, currDim+1, root->content);
+            }
+        } else {
+            //return rolled up time data for each category
+        }
+    }
+
+    return result;
+}
+
+TimeResult *rollupTime(TimeResult **results){
+    //make new and free the old
 }
 
 TimeResult *timeQuery(NcQuery *self, int currDim, NcNode *root){

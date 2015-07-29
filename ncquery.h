@@ -24,19 +24,18 @@ typedef struct TileData { //rename TileResult
     unsigned long long *count;
 } TileData;
 
-typedef struct TimeResult {
+typedef struct TimeResult {//replace this with NcResult
     int num;
     int *start;//array
     int *end;//array
     unsigned long long *count;//array
 } TimeResult;
 
-typedef struct CatResult {
-    int num;
-    int *category; //array
-    TimeResult **tResult; //array of pointers
-    struct CatResult **cResult; //array of pointers
-} CatResult;
+typedef struct NcResult {
+    struct NcResult **children;
+    unsigned int addr; //replace this with pair of size_t's
+    TimeResult *data;
+} NcResult;
 
 NcQuery *newQuery(Nanocube *nc);
 void addGeoConstraint(NcQuery *self, int dim, GeoData *gd, int drilldown);
@@ -48,7 +47,8 @@ void tile(Nanocube *nc, NcQuery *query);
 TileData *tileDrillDown(NcNode *root, int x, int y, int z);
 
 void geoQuery(NcQuery *self, int currDim, NcNode *root);
-void catQuery(NcQuery *self, int currDim, NcNode *root);
+NcResult *catQuery(NcQuery *self, int currDim, NcNode *root);
+TimeResult *rollupTime(TimeResult **results);
 TimeResult *timeQuery(NcQuery *self, int currDim, NcNode *root);
 
 
