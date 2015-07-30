@@ -4,18 +4,27 @@
 #include "nanocube.h"
 #include "ncdata.h"
 
-typedef struct NcQuery {
-    NcDataType *type;
-    NcData *data;
-    struct NcQuery *next;
-    int *drilldown; //array
-} NcQuery;
+typedef struct CatConstraint {
+    int *categories;
+    int num;
+} CatConstraint;
 
 typedef struct TimeConstraint {
     int start;
     int binSize;
     int numBins;
 } TimeConstraint;
+
+typedef struct NcQuery {
+    NcDataType type;
+    union {
+        GeoData *geo;
+        CatConstraint *cat;
+        TimeConstraint *time;
+    } data;
+    struct NcQuery *next;
+    int drilldown; //array
+} NcQuery;
 
 typedef struct TileData { //rename TileResult
     int num;
@@ -46,18 +55,18 @@ typedef struct NcResult {
 
 NcQuery *newQuery(Nanocube *nc);
 void addGeoConstraint(NcQuery *self, int dim, GeoData *gd, int drilldown);
-void addCatConstraint(NcQuery *self, int dim, CatData *cd, int drilldown);
+void addCatConstraint(NcQuery *self, int dim, CatConstraint *cc, int drilldown);
 void addTimeConstraint(NcQuery *self, int dim, TimeConstraint *tc, int drilldown);
-void query(Nanocube *nc, NcQuery *query);
+NcResult *query(Nanocube *nc, NcQuery *query);
+void printResult(NcResult *self, int depth);
 
 void tile(Nanocube *nc, NcQuery *query);
 TileData *tileDrillDown(NcNode *root, int x, int y, int z);
 
-void geoQuery(NcQuery *self, int currDim, NcNode *root);
-NcResult *catQuery(NcQuery *self, int currDim, NcNode *root);
-TimeResult *rollupTime(TimeResult **results);
-NcResult *timeQuery(NcQuery *self, int currDim, NcNode *root);
+NcResult *geoQuery(NcQuery *self, NcNode *root);
+NcResult *catQuery(NcQuery *self, NcNode *root);
+NcResult *timeQuery(NcQuery *self, NcNode *root);
 NcResult *newResult();
-
+NcResult *rollupResults(NcResult **results, int num);
 
 #endif

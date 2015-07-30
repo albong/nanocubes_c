@@ -12,63 +12,86 @@ static void addData(TileData *self, int x, int y, unsigned long long count);
 
 NcQuery *newQuery(Nanocube *nc){
     NcQuery *result = malloc(sizeof(NcQuery));
-    result->data = malloc(sizeof(NcData));
-    result->data->data = NULL;
-    result->type = malloc(sizeof(NcDataType) * (nc->numSpatialDim + nc->numCategories + 1));
+    result->type = GEO;
+    result->data.geo = NULL;
+    result->drilldown = 0;
 
-    NcData *curr = result->data;
+    NcQuery *curr = result;
     int i;
     for (i = 1; i < (nc->numSpatialDim + nc->numCategories); i++){
-        curr->next = malloc(sizeof(NcData));
+        curr->next = malloc(sizeof(NcQuery));
         curr = curr->next;
-        curr->data = NULL;
-
+        curr->drilldown = 0;
         if (i < nc->numSpatialDim){
-            result->type[i] = GEO;
+            curr->type = GEO;
+            curr->data.geo = NULL;
         } else {
-            result->type[i] = CAT;
+            curr->type = CAT;
+            curr->data.cat = NULL;
         }
     }
-    result->type[i] = TIME;
-    //we've covered the geo and cat dimensions, now we need to cover the time dimension
     curr->next = malloc(sizeof(NcQuery));
     curr = curr->next;
-    curr->data = NULL;
+    curr->drilldown = 0;
+    curr->type = TIME;
+    curr->data.time = NULL;
 
-    result->drilldown = malloc(sizeof(int) * (nc->numSpatialDim + nc->numCategories + 1));
-    for (i = 0; i < (nc->numSpatialDim + nc->numCategories + 1); i++){
-        result->drilldown[i] = 0;
-    }
     return result;
 }
 
 void addGeoConstraint(NcQuery *self, int dim, GeoData *gd, int drilldown){
-    NcData *constraint = getDataAtInd(self->data, dim);
-    constraint->data = malloc(sizeof(GeoData));
-    memcpy(constraint->data, gd, sizeof(GeoData));
-    self->drilldown[dim] = drilldown;
+    NcQuery *curr = self;
+    int i;
+    for (i = 0; i < dim; i++){
+        curr = curr->next;
+    }
+    curr->data.geo = malloc(sizeof(GeoData));
+    memcpy(curr->data.geo, gd, sizeof(GeoData));
+    curr->drilldown = drilldown;
 }
 
-void addCatConstraint(NcQuery *self, int dim, CatData *cd, int drilldown){
-    NcData *constraint = getDataAtInd(self->data, dim);
-    constraint->data = malloc(sizeof(CatData));
-    memcpy(constraint->data, cd, sizeof(CatData));
-    self->drilldown[dim] = drilldown;
+void addCatConstraint(NcQuery *self, int dim, CatConstraint *cc, int drilldown){
+    NcQuery *curr = self;
+    int i;
+    for (i = 0; i < dim; i++){
+        curr = curr->next;
+    }
+    curr->data.cat = malloc(sizeof(CatConstraint));
+    memcpy(curr->data.cat, cc, sizeof(CatConstraint));
+    curr->drilldown = drilldown;
 }
 
 void addTimeConstraint(NcQuery *self, int dim, TimeConstraint *tc, int drilldown){
-    NcData *constraint = getDataAtInd(self->data, dim);
-    constraint->data = malloc(sizeof(TimeConstraint));
-    memcpy(constraint->data, tc, sizeof(TimeConstraint));
-    self->drilldown[dim] = drilldown;
-}
-
-void query(Nanocube *nc, NcQuery *query){
-    geoQuery(query, 0, nc->root);
-}
-
-void geoQuery(NcQuery *self, int currDim, NcNode *root){
+    NcQuery *curr = self;
     int i;
+    for (i = 0; i < dim; i++){
+        curr = curr->next;
+    }
+    curr->data.time = malloc(sizeof(TimeConstraint));
+    memcpy(curr->data.time, tc, sizeof(TimeConstraint));
+    curr->drilldown = drilldown;
+}
+
+NcResult *query(Nanocube *nc, NcQuery *query){
+    return geoQuery(query, nc->root);
+}
+
+void printResult(NcResult *self, int depth){
+    int i;
+    for (i = 0; i < depth; i++){
+        printf(" ");
+    }
+    printf("%d,%d | ", self->addr.dates.start, self->addr.dates.end);
+    printf("%lu | %p\n", self->count, self->children);
+    if (self->children != NULL){
+        for (i = 0; i < self->count; i++){
+            printResult(self->children[i], depth+1);
+        }
+    }
+}
+
+NcResult *geoQuery(NcQuery *self, NcNode *root){
+/*    int i;
     int nextX, nextY;
     GeoNode *gn;
     GeoData *gdConstraint;
@@ -122,15 +145,76 @@ void geoQuery(NcQuery *self, int currDim, NcNode *root){
             timeQuery(self, currDim+1, curr->content);
         }
     }
+*/
+    NcResult *result;
+    GeoData *gd = self->data.geo;
+    NcNode *node;
+    int nextX, nextY;
+    int i;
+    GeoNode *gn;
+    NcNode *curr, *next;
+
+    if (self->drilldown == 1){
+        if (gd == NULL){
+            //return top level tile
+            printf("return top tile\n");
+        } else {
+            //return specific tile
+            printf("return specific tile\n");
+        }
+    } else {
+        if (gd == NULL){
+            //no constraint, skip
+            printf("no geo constraint\n");
+            node = root;
+        } else {
+            //return counts for node
+            printf("get counts for geo\n");
+            curr = root;
+            gn = (GeoNode *)curr->node;
+            while(gn->z > gd->z){
+                next = NULL;
+                nextX = gd->x / (1 << (MAX_GEO_DEPTH - (gn->z+1)));
+                nextY = gd->y / (1 << (MAX_GEO_DEPTH - (gn->z+1)));
+                for (i = 0; i < curr->numChildren; i++){
+                    gn = (GeoNode *)curr->children[i]->node;
+                    if (gn->x == nextX && gn->y == nextY){
+                        next = curr->children[i];
+                        break;
+                    }
+                }
+                if (next == NULL){
+                    /*
+                    NO DATA FOUND #PANIC
+                    */
+                    return newResult();
+                } else {
+                    curr = next;
+                    gn = (GeoNode *)curr->node;
+                }
+            }
+            node = curr;            
+        }
+        
+        if (self->next->type == GEO){
+            result = geoQuery(self->next, node->content);
+        } else if (self->next->type == CAT){
+            result = catQuery(self->next, node->content);
+        } else { //time
+            result = timeQuery(self->next, node->content);
+        }
+    }
+
+    return result;
 }
 
-NcResult *catQuery(NcQuery *self, int currDim, NcNode *root){
-    int i;
+NcResult *catQuery(NcQuery *self, NcNode *root){
+/*    int i;
     ConNode *cn;
-    CatData *cdConstraint;
+    CatConstraint *cc;
     NcNode *next;
     NcData *constraint = getDataAtInd(self->data, currDim);
- /*   
+   
     if (constraint->data == NULL){
         printf("cat - no constraint\n");
         if (self->type[currDim+1] == GEO){
@@ -166,49 +250,44 @@ NcResult *catQuery(NcQuery *self, int currDim, NcNode *root){
 */
 
     NcResult *result;
-    if (self->drilldown[currDim] == 1){
-        if(constraint->data == NULL){
+    CatConstraint *cc = self->data.cat;
+    if (self->drilldown == 1){
+        if(cc == NULL){
             //return new result where each child has next query level
+            printf("drilldown all cats\n");
         } else {
             //same as before but only for the specified children
+            printf("drilldown special cats\n");
         }
     } else {
-        if(constraint->data == NULL){
+        if(cc == NULL){
             //no constraint, skip
-            if (self->type[currDim+1] == CAT){
-                result = catQuery(self, currDim+1, root->content);
+            printf("no cat constraints\n");
+            if (self->next->type == CAT){
+                result = catQuery(self->next, root->content);
             } else { //time
-                //ought just be returing the time thingy, assuming that we've hence converted the
-                //type to return the other kind of struct
-                result = malloc(sizeof(NcResult));
-                result->addr = 0;
-                result->children = NULL;
-                result->data = timeQuery(self, currDim+1, root->content);
+                result = timeQuery(self->next, root->content);
             }
         } else {
             //return rolled up time data for each category
+            printf("rollup special cats\n");
         }
     }
 
     return result;
 }
 
-TimeResult *rollupTime(TimeResult **results){
-    //make new and free the old
-}
-
-NcResult *timeQuery(NcQuery *self, int currDim, NcNode *root){
+NcResult *timeQuery(NcQuery *self, NcNode *root){
     //if constraint is null and no drilldown, then nothing, otherwise there are cases
-    NcData *constraint = getDataAtInd(self->data, currDim);
-    TimeConstraint *tc = (TimeConstraint *)constraint->data;
-    TimeNode * tn = (TimeNode *)root->node;
+    TimeConstraint *tc = self->data.time;
+    TimeNode *tn = (TimeNode *)root->node;
     NcResult *result = newResult();
 
     int numBins;
     int binSize;
     int start;
     int end;
-    if (self->drilldown[currDim]){
+    if (self->drilldown){
         //return timeseries
         printf("time - return series\n");
         if (tc != NULL){
@@ -275,7 +354,8 @@ NcResult *newResult(){
     NcResult *result = malloc(sizeof(NcResult));
     result->children = NULL;
     result->count = 0;
-    result->addr.category = 0;
+    result->addr.dates.start = 0;
+    result->addr.dates.end = 0;
     return result;
 }
 

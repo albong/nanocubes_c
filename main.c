@@ -2,6 +2,7 @@
 #include "ncquery.h"
 #include "ncdata.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, const char *argv[]){
     printf("Start\n");
@@ -14,10 +15,16 @@ int main(int argc, const char *argv[]){
 
 
     //query testing
+    CatConstraint cat1;
+    cat1.num = 1;
+    cat1.categories = malloc(sizeof(int) * cat1.num);
+    cat1.categories[0] = 1;
     printf("Making query\n");
     NcQuery *q = newQuery(nc);
     printf("adding categorical constraint\n");
-    addCatConstraint(q, 1, (CatData *)newCatData(1)->data, 0);
+    addCatConstraint(q, 1, &cat1, 0);
     printf("running query\n");
-    query(nc, q);    
+    NcResult *qResult = query(nc, q);
+    printf("survived query\n");
+    printResult(qResult, 0);
 }
