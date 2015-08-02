@@ -16,14 +16,13 @@ int main(int argc, const char *argv[]){
 
     //query testing
     CatConstraint cat1;
-    cat1.num = 0;
+    cat1.num = 1;
     cat1.categories = malloc(sizeof(int) * cat1.num);
     cat1.categories[0] = 1;
-    cat1.categories = NULL;
     printf("Making query\n");
     NcQuery *q = newQuery(nc);
     printf("adding categorical constraint\n");
-//    addCatConstraint(q, 1, &cat1, 0);
+    addCatConstraint(q, 1, &cat1, 0);
     printf("running query\n");
     NcResult *qResult = query(nc, q);
     printf("survived query\n");

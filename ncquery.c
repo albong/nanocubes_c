@@ -77,7 +77,6 @@ NcResult *query(Nanocube *nc, NcQuery *query){
 }
 
 void printResult(NcResult *self, int depth){
-    printf("%p\n", self);
     int i;
     for (i = 0; i < depth; i++){
         printf(" ");
@@ -215,6 +214,8 @@ NcResult *catQuery(NcQuery *self, NcNode *root){
     NcResult *result;
     CatConstraint *cc = self->data.cat;
     ConNode *cn;
+    NcResult **toRoll;
+    int numToRoll;
     if (self->drilldown == 1){
         result = newResult();
         if(cc == NULL){
@@ -263,6 +264,25 @@ NcResult *catQuery(NcQuery *self, NcNode *root){
         } else {
             //return rolled up time data for each category
             printf("rollup special cats\n");
+            toRoll = NULL;
+            numToRoll = 0;
+
+            for (i = 0; i < root->numChildren; i++){
+                cn = (ConNode *)root->children[i]->node;
+                for (j = 0; j < cc->num; j++){
+                    if (cn->category == cc->categories[i]){
+                        numToRoll++;
+                        toRoll = realloc(toRoll, sizeof(NcResult *) * numToRoll);
+                        if (self->next->type == CAT){
+                            toRoll[numToRoll - 1] = catQuery(self->next, root->content);
+                        } else { //time
+                            toRoll[numToRoll - 1] = timeQuery(self->next, root->content);
+                        }
+                        toRoll[numToRoll - 1]->addr.dates.start = cn->category;
+                    }
+                }
+            }
+            result = rollupResults(self, toRoll, numToRoll);
         }
     }
 
@@ -353,7 +373,7 @@ NcResult *newResult(){
 
 NcResult *rollupResults(NcQuery *query, NcResult **results, int num){
     NcResult *rolled = newResult();
-   
+ 
     NcResult **toRoll = NULL;
     int numToRoll = 0;
     int i, j, k, l;
@@ -367,9 +387,9 @@ NcResult *rollupResults(NcQuery *query, NcResult **results, int num){
                 numToRoll++;
                 toRoll = realloc(toRoll, sizeof(NcResult) * numToRoll);
                 toRoll[numToRoll-1] = results[i]->children[j];
-                results[i]->children[j] = NULL;
                 currStart = results[i]->children[j]->addr.dates.start;
                 currEnd = results[i]->children[j]->addr.dates.end;
+                results[i]->children[j] = NULL;
 
                 for (k = i+1; k < num; k++){
                     for (l = 0; l < results[k]->count; l++){
