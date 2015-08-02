@@ -77,6 +77,7 @@ NcResult *query(Nanocube *nc, NcQuery *query){
 }
 
 void printResult(NcResult *self, int depth){
+    printf("%p\n", self);
     int i;
     for (i = 0; i < depth; i++){
         printf(" ");
@@ -209,49 +210,13 @@ NcResult *geoQuery(NcQuery *self, NcNode *root){
 }
 
 NcResult *catQuery(NcQuery *self, NcNode *root){
-/*    int i;
-    ConNode *cn;
-    CatConstraint *cc;
-    NcNode *next;
-    NcData *constraint = getDataAtInd(self->data, currDim);
-   
-    if (constraint->data == NULL){
-        printf("cat - no constraint\n");
-        if (self->type[currDim+1] == GEO){
-            geoQuery(self, currDim+1, root->content);
-        } else if (self->type[currDim+1] == CAT){
-            catQuery(self, currDim+1, root->content);
-        } else { //time
-            timeQuery(self, currDim+1, root->content);
-        }
-    } else if (self->drilldown[currDim] == 1){
-        //print for each category - need rollup
-        printf("cat - break out by category\n");
-    } else {
-        printf("cat - select from category\n");
-        cdConstraint = (CatData *)constraint->data;
-        next = NULL;
-        for (i = 0; i < root->numChildren; i++){
-            cn = (ConNode *)root->children[i]->node;
-            if (cn->category == cdConstraint->category){
-                next = root->children[i];
-                break;
-            }
-        }
-
-        if (next == NULL){
-            printf("0\n");
-        } else if (self->type[currDim+1] == CAT){
-            catQuery(self, currDim+1, next->content);
-        } else { //time
-            timeQuery(self, currDim+1, next->content);
-        }
-    }
-*/
-
+    int i, j;
+    int drillCat;
     NcResult *result;
     CatConstraint *cc = self->data.cat;
+    ConNode *cn;
     if (self->drilldown == 1){
+        result = newResult();
         if(cc == NULL){
             //return new result where each child has next query level
             printf("drilldown all cats\n");
@@ -259,6 +224,33 @@ NcResult *catQuery(NcQuery *self, NcNode *root){
             //same as before but only for the specified children
             printf("drilldown special cats\n");
         }
+
+        //loop over all children, if we're constrained then check against the list
+        for (i = 0; i < root->numChildren; i++){
+            cn = (ConNode *)root->children[i]->node;
+            if (cc != NULL){
+                for (j = 0; j < cc->num; j++){
+                    if (cn->category == cc->categories[i]){
+                        drillCat = 1;
+                        break;
+                    }
+                }
+            } else {
+                drillCat = 1;
+            }
+
+            if (drillCat){
+                result->count++;
+                result->children = realloc(result->children, sizeof(NcResult) * result->count);
+                if (self->next->type == CAT){
+                    result->children[result->count - 1] = catQuery(self->next, root->content);
+                } else { //time
+                    result->children[result->count - 1] = timeQuery(self->next, root->content);
+                }
+            }
+            drillCat = 0;
+        }
+
     } else {
         if(cc == NULL){
             //no constraint, skip
@@ -320,7 +312,7 @@ NcResult *timeQuery(NcQuery *self, NcNode *root){
             numBins = 1;
         }
     }
-    
+   
     result->count = numBins;
     result->children = malloc(numBins * sizeof(NcResult *));
 
@@ -332,7 +324,7 @@ NcResult *timeQuery(NcQuery *self, NcNode *root){
             result->children[currBin] = newResult();
             result->children[currBin]->addr.dates.start = i;
         }
-        result->children[i]->count += getCountAtTime(tn->timeseries, i);
+        result->children[currBin]->count += getCountAtTime(tn->timeseries, i);
         count++;
         if (count == binSize){
             result->children[currBin]->addr.dates.end = i;
@@ -357,6 +349,66 @@ NcResult *newResult(){
     result->addr.dates.start = 0;
     result->addr.dates.end = 0;
     return result;
+}
+
+NcResult *rollupResults(NcQuery *query, NcResult **results, int num){
+    NcResult *rolled = newResult();
+   
+    NcResult **toRoll = NULL;
+    int numToRoll = 0;
+    int i, j, k, l;
+    int currStart, currEnd;
+    for (i = 0; i < num; i++){
+        if (results[i]->children != NULL){
+            for (j = 0; j < results[i]->count; j++){
+                if (results[i]->children[j] == NULL){
+                    continue;
+                }
+                numToRoll++;
+                toRoll = realloc(toRoll, sizeof(NcResult) * numToRoll);
+                toRoll[numToRoll-1] = results[i]->children[j];
+                results[i]->children[j] = NULL;
+                currStart = results[i]->children[j]->addr.dates.start;
+                currEnd = results[i]->children[j]->addr.dates.end;
+
+                for (k = i+1; k < num; k++){
+                    for (l = 0; l < results[k]->count; l++){
+                        if (results[k]->children[l] == NULL){
+                            continue;
+                        } else if (results[i]->children[j]->addr.dates.start == results[k]->children[l]->addr.dates.start &&
+                                    results[i]->children[j]->addr.dates.end == results[k]->children[l]->addr.dates.end) {//if the i-j addr matches the k-l addr, add to list
+                            numToRoll++;
+                            toRoll = realloc(toRoll, sizeof(NcResult) * numToRoll);
+                            toRoll[numToRoll-1] = results[k]->children[l];
+                            results[k]->children[l] = NULL;
+                        }
+                    }
+                }
+                
+                if (numToRoll > 0){
+                    rolled->count++;
+                    rolled->children = realloc(rolled->children, rolled->count * sizeof(NcResult *));
+                    rolled->children[rolled->count - 1] = rollupResults(query->next, toRoll, numToRoll);
+                    rolled->children[rolled->count - 1]->addr.dates.start = currStart;
+                    rolled->children[rolled->count - 1]->addr.dates.end = currEnd;
+                    numToRoll = 0;
+                    toRoll = NULL;
+                }
+
+            }
+            /*
+            No freeing happening, need someway to mark child as already rolled,
+            if we free and check if null that could work
+            write a similar method that recursively frees, pass in the toRoll and numToRoll
+            */
+        } else {
+            rolled->addr.dates.start = results[i]->addr.dates.start;//these addresses should all be same
+            rolled->addr.dates.end = results[i]->addr.dates.end;
+            rolled->count += results[i]->count;
+        }
+    }
+    
+    return rolled;
 }
 
 

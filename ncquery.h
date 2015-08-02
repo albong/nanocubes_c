@@ -49,7 +49,7 @@ typedef struct NcResult {
             int start;
             int end;
         } dates;
-    } addr;
+    } addr; //rename key
     unsigned long long count;
 } NcResult;
 
@@ -67,6 +67,6 @@ NcResult *geoQuery(NcQuery *self, NcNode *root);
 NcResult *catQuery(NcQuery *self, NcNode *root);
 NcResult *timeQuery(NcQuery *self, NcNode *root);
 NcResult *newResult();
-NcResult *rollupResults(NcResult **results, int num);
+NcResult *rollupResults(NcQuery *query, NcResult **results, int num);
 
 #endif
