@@ -1,5 +1,5 @@
 #include "nanocube.h"
-#include "ncquery.h"
+//#include "ncquery.h"
 #include "ncdata.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,9 +13,8 @@ int main(int argc, const char *argv[]){
     printf("Added to the nanocube!\n");
     printNanocube(nc);
 
-
     //query testing
-    CatConstraint cat1;
+/*    CatConstraint cat1;
     cat1.num = 1;
     cat1.categories = malloc(sizeof(int) * cat1.num);
     cat1.categories[0] = 1;
@@ -27,4 +26,5 @@ int main(int argc, const char *argv[]){
     NcResult *qResult = query(nc, q);
     printf("survived query\n");
     printResult(qResult, 0);
+*/
 }

@@ -33,3 +33,16 @@ void printTimeseries(Timeseries *self){
     }
     printf("\n");
 }
+
+Timeseries *deepCopyTimeseries(Timeseries *self){
+    Timeseries *copy = malloc(sizeof(Timeseries));
+
+    copy->numBins = self->numBins;
+    copy->bins = malloc(sizeof(unsigned long long) * copy->numBins);
+    size_t i;
+    for (i = 0; i < copy->numBins; i++){
+        copy->bins[i] = self->bins[i];
+    }
+
+    return copy;
+}

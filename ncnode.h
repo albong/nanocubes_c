@@ -11,8 +11,12 @@ typedef struct NcNode {
     void *node;
     struct NcNode **children; //array
     int numChildren;
-    int *isShared; //array
-    struct NcNode *content;
+    int *isShared; //array - rename isChildShared
+//    struct NcNode *content;
+    union {
+        struct NcNode *node;
+        Timeseries *timeseries;
+    } content;
     int sharedContent;
 } NcNode;
 
@@ -58,7 +62,6 @@ NcNode *shallowCopyNode(NcNode *self);
 
 int nodeInList(NcNode *self, NcNode **list, size_t size);
 
-void insert(NcNode *self, int time, unsigned long long count);
-void insertData(NcNode *self, NcData *data);
+void insertData(NcNode *self, int dim, int timeDim, NcData *data);
 
 #endif

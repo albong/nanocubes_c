@@ -7,7 +7,7 @@
 //static void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated);
 static void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
 static NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values);
-static void printNode(NcNode *self, int padding, int isShared, int isContent);
+static void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube *nc, int dim);
 
 Nanocube *newNanocube(size_t numSpatialDim, size_t numCategories){
     Nanocube *result = malloc(sizeof(Nanocube));
@@ -97,20 +97,25 @@ void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList
         if (curr->numChildren == 1){
             curr->content = child->content;
             curr->sharedContent = 1;
-        } else if (curr->content == NULL){
+        } else if (curr->content.node == NULL){ //should cover content.timeseries being null too
             if (dim == nc->numDim){
-                curr->content = newTimeNode();
+//                curr->content = newTimeNode();
+                curr->content.timeseries = newTimeseries();
             } else {
                 if (nc->dimensions[dim] == GEO){
-                    curr->content = newGeoNode(0,0,0);
+                    curr->content.node = newGeoNode(0,0,0);
                 } else {
-                    curr->content = newCatNode(-1);
+                    curr->content.node = newCatNode(-1);
                 }
             }
             curr->sharedContent = 0;
             update = 1;
         } else if (curr->sharedContent && !nodeInList(curr, updatedList, *numUpdated)) {
-            curr->content = shallowCopyNode(curr->content);
+            if (dim < nc->numDim){
+                curr->content.node = shallowCopyNode(curr->content.node);
+            } else {
+                curr->content.timeseries = deepCopyTimeseries(curr->content.timeseries);
+            }
             curr->sharedContent = 0;
             update = 1;
         } else if (!curr->sharedContent) {
@@ -119,13 +124,13 @@ void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList
         
         if (update){
             if (dim == nc->numDim){
-                insertData(curr, getDataAtInd(data, dim));
+                insertData(curr, dim, nc->numDim, getDataAtInd(data, dim));
             } else {
-                add(nc, curr->content, data, dim+1, updatedList, numUpdated);
+                add(nc, curr->content.node, data, dim+1, updatedList, numUpdated);
             }
             (*numUpdated)++;
             updatedList = realloc(updatedList, sizeof(NcNode *) * (*numUpdated));
-            updatedList[(*numUpdated)-1] = curr->content;
+            updatedList[(*numUpdated)-1] = curr->content.node;
         }
         child = curr;
     }
@@ -160,10 +165,10 @@ void printNanocube(Nanocube *self){
     printf("Num spatial dimensions: %d\n", self->numSpatialDim);//size_t is not a %d
     printf("Num categorical dimensions: %d\n", self->numCategories);//size_t is not a %d
     NcNode *curr = self->root;
-    printNode(curr, 0, 0, 0);
+    printNode(curr, 0, 0, 0, self, 0);
 }
 
-void printNode(NcNode *self, int padding, int isShared, int isContent){
+void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube *nc, int dim){
     if (self == NULL){
         return;
     }
@@ -190,7 +195,12 @@ void printNode(NcNode *self, int padding, int isShared, int isContent){
     }
 
     for (i = 0; i < self->numChildren; i++){
-        printNode(self->children[i], padding+1, self->isShared[i], 0);
+        printNode(self->children[i], padding+1, self->isShared[i], 0, nc, dim);
     }
-    printNode(self->content, padding+1, self->sharedContent, 1);
+
+    if (dim != nc->numDim - 1){
+        printNode(self->content.node, padding+1, self->sharedContent, 1, nc, dim+1);
+    } else {
+        printTimeseries(self->content.timeseries);
+    }
 }

@@ -13,15 +13,15 @@ NcNode *newNcNode(NcDataType type){
     result->children = NULL;
     result->numChildren = 0;
     result->isShared = NULL;
-    result->content = NULL;
+    result->content.node = NULL;
     result->sharedContent = 0;
 
     if (type == GEO){
         result->node = (void *)makeGeoNode(0,0,0);
     } else if (type == CAT){
         result->node = (void *)makeCatNode(-1);
-    } else if (type == TIME){
-        result->node = (void *)makeTimeNode();
+//    } else if (type == TIME){
+//        result->node = (void *)makeTimeNode();
     }
 
     return result;
@@ -43,10 +43,10 @@ NcNode *newCatNode(int category){
     return result;
 }
 
-NcNode *newTimeNode(){
-    NcNode *result = newNcNode(TIME);
-    return result;
-}
+//NcNode *newTimeNode(){
+//    NcNode *result = newNcNode(TIME);
+//    return result;
+//}
 
 GeoNode *makeGeoNode(int x, int y, int z){
     GeoNode *result = malloc(sizeof(GeoNode));
@@ -62,11 +62,11 @@ CatNode *makeCatNode(int category){
     return result;
 }
 
-TimeNode *makeTimeNode(){
-    TimeNode *result = malloc(sizeof(TimeNode));
-    result->timeseries = newTimeseries();
-    return result;
-}
+//TimeNode *makeTimeNode(){
+//    TimeNode *result = malloc(sizeof(TimeNode));
+//    result->timeseries = newTimeseries();
+//    return result;
+//}
 
 NcNodeStack *newNcNodeStack(){
     NcNodeStack *result = malloc(sizeof(NcNodeStack));
@@ -193,8 +193,8 @@ NcNode *shallowCopyNode(NcNode *self){
     copy->type = self->type;
     copy->node = self->node; //this may be bad, may want to deep copy this
 
-    if (self->content != NULL){
-        copy->content = self->content;
+    if (self->content.node != NULL){
+        copy->content.node = self->content.node;
         copy->sharedContent = 1;
     }
 
@@ -221,17 +221,13 @@ int nodeInList(NcNode *self, NcNode **list, size_t size){
     return result;
 }
 
-void insert(NcNode *self, int time, unsigned long long count){
-    if (self->type != TIME){
-        insert(self->content, time, count);
+void insertData(NcNode *self, int dim, int timeDim, NcData *data){
+    TimeData *td;
+    if (dim != timeDim){
+        insertData(self->content.node, dim+1, timeDim, data);
     } else {
-        TimeNode *tn = (TimeNode *)self->node;
-        addToTimeseries(tn->timeseries, time, count);
+        td = (TimeData *)data->data;
+        addToTimeseries(self->content.timeseries, td->time, td->count);
     }
-}
-
-void insertData(NcNode *self, NcData *data){
-    TimeData *td = (TimeData *)data->data;
-    insert(self, td->time, td->count);
 }
 
