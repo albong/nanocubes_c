@@ -19,7 +19,7 @@ Nanocube *newNanocube(size_t numSpatialDim, size_t numCategories){
     if (numSpatialDim > 0){
         result->root = newGeoNode(0,0,0);
     } else {
-        result->root = newConNode(-1);
+        result->root = newCatNode(-1);
     }
 
     result->numDim = numSpatialDim + numCategories;
@@ -104,7 +104,7 @@ void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList
                 if (nc->dimensions[dim] == GEO){
                     curr->content = newGeoNode(0,0,0);
                 } else {
-                    curr->content = newConNode(-1);
+                    curr->content = newCatNode(-1);
                 }
             }
             curr->sharedContent = 0;
@@ -174,7 +174,7 @@ void printNode(NcNode *self, int padding, int isShared, int isContent){
     }
 
     GeoNode *gn;
-    ConNode *cn;
+    CatNode *cn;
     TimeNode *tn;
     char shared = isShared ? 'S' : 'P';
     char content = isContent ? 'C' : 'N';
@@ -182,7 +182,7 @@ void printNode(NcNode *self, int padding, int isShared, int isContent){
         gn = (GeoNode *)self->node;
         printf("%c : GEO : %d,%d,%d : %c : %p\n", content, gn->x, gn->y, gn->z, shared, self);
     } else if (self->type == CAT) {
-        cn = (ConNode *)self->node;
+        cn = (CatNode *)self->node;
         printf("%c : CAT : %d : %c : %p\n", content, cn->category, shared, self);
     } else { //TIME
         tn = (TimeNode *)self->node;

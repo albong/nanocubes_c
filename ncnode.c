@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 static GeoNode *makeGeoNode(int x, int y, int z);
-static ConNode *makeConNode(int category);
+static CatNode *makeCatNode(int category);
 static TimeNode *makeTimeNode();
 
 NcNode *newNcNode(NcDataType type){
@@ -19,7 +19,7 @@ NcNode *newNcNode(NcDataType type){
     if (type == GEO){
         result->node = (void *)makeGeoNode(0,0,0);
     } else if (type == CAT){
-        result->node = (void *)makeConNode(-1);
+        result->node = (void *)makeCatNode(-1);
     } else if (type == TIME){
         result->node = (void *)makeTimeNode();
     }
@@ -36,9 +36,9 @@ NcNode *newGeoNode(int x, int y, int z){
     return result;
 }
 
-NcNode *newConNode(int category){
+NcNode *newCatNode(int category){
     NcNode *result = newNcNode(CAT);
-    ConNode *node = (ConNode *)result->node;
+    CatNode *node = (CatNode *)result->node;
     node->category = category;
     return result;
 }
@@ -56,8 +56,8 @@ GeoNode *makeGeoNode(int x, int y, int z){
     return result;
 }
 
-ConNode *makeConNode(int category){
-    ConNode *result = malloc(sizeof(ConNode));
+CatNode *makeCatNode(int category){
+    CatNode *result = malloc(sizeof(CatNode));
     result->category = category;
     return result;
 }
@@ -107,7 +107,7 @@ NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index){
     GeoData gd;
     CatData cd;
     GeoNode *gn;
-    ConNode *cn;
+    CatNode *cn;
     int i;
     for (i = 0; i < self->numChildren; i++){
         child = self->children[i];
@@ -119,7 +119,7 @@ NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index){
                 break;
             }
         } else if (child->type = CAT && values->type == CAT) {
-            cn = (ConNode *)child->node;
+            cn = (CatNode *)child->node;
             cd = ((CatData *)values->data)[index];
             if (cn->category == cd.category){
                 result = child;
@@ -138,7 +138,7 @@ int getMatchingChildInd(NcNode *self, NcValueChain *values, int index){
     GeoData gd;
     CatData cd;
     GeoNode *gn;
-    ConNode *cn;
+    CatNode *cn;
     int i;
     for (i = 0; i < self->numChildren; i++){
         child = self->children[i];
@@ -150,7 +150,7 @@ int getMatchingChildInd(NcNode *self, NcValueChain *values, int index){
                 break;
             }
         } else if (child->type = CAT && values->type == CAT) {
-            cn = (ConNode *)child->node;
+            cn = (CatNode *)child->node;
             cd = ((CatData *)values->data)[index];
             if (cn->category == cd.category){
                 result = i;
@@ -172,7 +172,7 @@ NcNode *newProperChild(NcNode *self, NcValueChain *values, int index){
         result = newGeoNode(gd.x, gd.y, gd.z);
     } else {
         cd = ((CatData *)values->data)[index];
-        result = newConNode(cd.category);
+        result = newCatNode(cd.category);
     }
 
     self->numChildren++;

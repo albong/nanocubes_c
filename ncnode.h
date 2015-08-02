@@ -22,9 +22,9 @@ typedef struct GeoNode {
     int z;
 } GeoNode;
 
-typedef struct ConNode { //rename to CatNode
+typedef struct CatNode {
     int category;
-} ConNode;
+} CatNode;
 
 typedef struct TimeNode {
     Timeseries *timeseries;
@@ -37,11 +37,11 @@ typedef struct NcNodeStack {
 
 NcNode *newNcNode(NcDataType type);
 NcNode *newGeoNode(int x, int y, int z);
-NcNode *newConNode(int category);
+NcNode *newCatNode(int category);
 NcNode *newTimeNode();
 
 //static GeoNode *makeGeoNode(int x, int y, int z);
-//static ConNode *makeConNode(int category);
+//static CatNode *makeCatNode(int category);
 //static TimeNode *makeTimeNode();
 
 NcNodeStack *newNcNodeStack();

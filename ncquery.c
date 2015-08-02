@@ -207,7 +207,7 @@ NcResult *catQuery(NcQuery *self, NcNode *root){
     int drillCat;
     NcResult *result;
     CatConstraint *cc = self->data.cat;
-    ConNode *cn;
+    CatNode *cn;
     NcResult **toRoll;
     int numToRoll;
     if (self->drilldown == 1){
@@ -222,7 +222,7 @@ NcResult *catQuery(NcQuery *self, NcNode *root){
 
         //loop over all children, if we're constrained then check against the list
         for (i = 0; i < root->numChildren; i++){
-            cn = (ConNode *)root->children[i]->node;
+            cn = (CatNode *)root->children[i]->node;
             if (cc != NULL){
                 for (j = 0; j < cc->num; j++){
                     if (cn->category == cc->categories[i]){
@@ -262,7 +262,7 @@ NcResult *catQuery(NcQuery *self, NcNode *root){
             numToRoll = 0;
 
             for (i = 0; i < root->numChildren; i++){
-                cn = (ConNode *)root->children[i]->node;
+                cn = (CatNode *)root->children[i]->node;
                 for (j = 0; j < cc->num; j++){
                     if (cn->category == cc->categories[i]){
                         numToRoll++;
