@@ -155,13 +155,7 @@ NcResult *geoQuery(NcQuery *self, NcNode *root){
     NcNode *curr, *next;
 
     if (self->drilldown == 1){
-        if (gd == NULL){
-            //return top level tile
-            printf("return top tile\n");
-        } else {
-            //return specific tile
-            printf("return specific tile\n");
-        }
+        printf("Run tile to drilldown into a geo dimension\n");
     } else {
         if (gd == NULL){
             //no constraint, skip
