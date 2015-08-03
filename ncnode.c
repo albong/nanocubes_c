@@ -8,7 +8,7 @@ static TimeNode *makeTimeNode();
 NcNode *newNcNode(NcDataType type){
     NcNode *result = malloc(sizeof(NcNode));
     
-    result->type = type;
+//    result->type = type;
     result->node = NULL;
     result->children = NULL;
     result->numChildren = 0;
@@ -100,7 +100,7 @@ int stackEmpty(NcNodeStack *self){
     }
 }
 
-NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index){
+NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index, NcDataType type){
     NcNode *result = NULL;
     
     NcNode *child;
@@ -111,14 +111,16 @@ NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index){
     int i;
     for (i = 0; i < self->numChildren; i++){
         child = self->children[i];
-        if (child->type == GEO && values->type == GEO){
+//        if (child->type == GEO && values->type == GEO){
+        if (type == GEO){
             gn = (GeoNode *)child->node;
             gd = ((GeoData *)values->data)[index];
             if (gn->x == gd.x && gn->y == gd.y && gn->z == gd.z){
                 result = child;
                 break;
             }
-        } else if (child->type = CAT && values->type == CAT) {
+//        } else if (child->type = CAT && values->type == CAT) {
+        } else { //categorical
             cn = (CatNode *)child->node;
             cd = ((CatData *)values->data)[index];
             if (cn->category == cd.category){
@@ -131,7 +133,7 @@ NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index){
     return result;
 }
 
-int getMatchingChildInd(NcNode *self, NcValueChain *values, int index){
+int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataType type){
     int result = -1;
     
     NcNode *child;
@@ -142,14 +144,16 @@ int getMatchingChildInd(NcNode *self, NcValueChain *values, int index){
     int i;
     for (i = 0; i < self->numChildren; i++){
         child = self->children[i];
-        if (child->type == GEO && values->type == GEO){
+//        if (child->type == GEO && values->type == GEO){
+        if (type == GEO){
             gn = (GeoNode *)child->node;
             gd = ((GeoData *)values->data)[index];
             if (gn->x == gd.x && gn->y == gd.y && gn->z == gd.z){
                 result = i;
                 break;
             }
-        } else if (child->type = CAT && values->type == CAT) {
+//        } else if (child->type = CAT && values->type == CAT) {
+        } else { //categorical
             cn = (CatNode *)child->node;
             cd = ((CatData *)values->data)[index];
             if (cn->category == cd.category){
@@ -190,7 +194,7 @@ NcNode *replaceChild(NcNode *self, int index){
 
 NcNode *shallowCopyNode(NcNode *self){
     NcNode *copy = malloc(sizeof(NcNode));
-    copy->type = self->type;
+//    copy->type = self->type;
     copy->node = self->node; //this may be bad, may want to deep copy this
 
     if (self->content.node != NULL){

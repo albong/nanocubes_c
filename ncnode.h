@@ -7,7 +7,7 @@
 #define MAX_GEO_DEPTH 5
 
 typedef struct NcNode {
-    NcDataType type;
+//    NcDataType type;
     void *node;
     struct NcNode **children; //array
     int numChildren;
@@ -53,8 +53,8 @@ void push(NcNodeStack *self, NcNode *node);
 NcNode *pop(NcNodeStack *self);
 int stackEmpty(NcNodeStack *self);
 
-NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index);
-int getMatchingChildInd(NcNode *self, NcValueChain *values, int index);
+NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index, NcDataType type);
+int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataType type);
 
 NcNode *newProperChild(NcNode *self, NcValueChain *values, int index);
 NcNode *replaceChild(NcNode *self, int childInd);
