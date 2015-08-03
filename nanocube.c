@@ -188,14 +188,15 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
     char shared = isShared ? 'S' : 'P';
     char content = isContent ? 'C' : 'N';
     if (dim < nc->numSpatialDim){
-        gn = (GeoNode *)self->node;
+        gn = self->node.geo;
         printf("%c : GEO : %d,%d,%d : %c : %p\n", content, gn->x, gn->y, gn->z, shared, self);
     } else if (dim < nc->numCategories) {
-        cn = (CatNode *)self->node;
+        cn = self->node.cat;
         printf("%c : CAT : %d : %c : %p\n", content, cn->category, shared, self);
     } else { //TIME
-        tn = (TimeNode *)self->node;
-        printf("%c : TIME :: %c : %p\n", content, shared, self);
+//        tn = (TimeNode *)self->node;
+//        printf("%c : TIME :: %c : %p\n", content, shared, self);
+        printf("ought not be here\n");
     }
 
     for (i = 0; i < self->numChildren; i++){

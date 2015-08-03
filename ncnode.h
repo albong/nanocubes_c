@@ -6,9 +6,23 @@
 
 #define MAX_GEO_DEPTH 5
 
+typedef struct GeoNode {
+    int x;
+    int y;
+    int z;
+} GeoNode;
+
+typedef struct CatNode {
+    int category;
+} CatNode;
+
 typedef struct NcNode {
 //    NcDataType type;
-    void *node;
+//    void *node;
+    union {
+        GeoNode *geo;
+        CatNode *cat;
+    } node;
     struct NcNode **children; //array
     int numChildren;
     int *isShared; //array - rename isChildShared
@@ -19,16 +33,6 @@ typedef struct NcNode {
     } content;
     int sharedContent;
 } NcNode;
-
-typedef struct GeoNode {
-    int x;
-    int y;
-    int z;
-} GeoNode;
-
-typedef struct CatNode {
-    int category;
-} CatNode;
 
 typedef struct TimeNode {
     Timeseries *timeseries;

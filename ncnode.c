@@ -9,7 +9,7 @@ NcNode *newNcNode(NcDataType type){
     NcNode *result = malloc(sizeof(NcNode));
     
 //    result->type = type;
-    result->node = NULL;
+//    result->node.geo = NULL;
     result->children = NULL;
     result->numChildren = 0;
     result->isShared = NULL;
@@ -17,9 +17,10 @@ NcNode *newNcNode(NcDataType type){
     result->sharedContent = 0;
 
     if (type == GEO){
-        result->node = (void *)makeGeoNode(0,0,0);
-    } else if (type == CAT){
-        result->node = (void *)makeCatNode(-1);
+        result->node.geo = makeGeoNode(0,0,0);
+//    } else if (type == CAT){
+    } else {
+        result->node.cat = makeCatNode(-1);
 //    } else if (type == TIME){
 //        result->node = (void *)makeTimeNode();
     }
@@ -29,7 +30,7 @@ NcNode *newNcNode(NcDataType type){
 
 NcNode *newGeoNode(int x, int y, int z){
     NcNode *result = newNcNode(GEO);
-    GeoNode *node = (GeoNode *)result->node;
+    GeoNode *node = result->node.geo;
     node->x = x;
     node->y = y;
     node->z = z;
@@ -38,7 +39,7 @@ NcNode *newGeoNode(int x, int y, int z){
 
 NcNode *newCatNode(int category){
     NcNode *result = newNcNode(CAT);
-    CatNode *node = (CatNode *)result->node;
+    CatNode *node = result->node.cat;
     node->category = category;
     return result;
 }
@@ -113,7 +114,7 @@ NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index, NcDataTy
         child = self->children[i];
 //        if (child->type == GEO && values->type == GEO){
         if (type == GEO){
-            gn = (GeoNode *)child->node;
+            gn = child->node.geo;
             gd = ((GeoData *)values->data)[index];
             if (gn->x == gd.x && gn->y == gd.y && gn->z == gd.z){
                 result = child;
@@ -121,7 +122,7 @@ NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index, NcDataTy
             }
 //        } else if (child->type = CAT && values->type == CAT) {
         } else { //categorical
-            cn = (CatNode *)child->node;
+            cn = child->node.cat;
             cd = ((CatData *)values->data)[index];
             if (cn->category == cd.category){
                 result = child;
@@ -146,7 +147,7 @@ int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataTyp
         child = self->children[i];
 //        if (child->type == GEO && values->type == GEO){
         if (type == GEO){
-            gn = (GeoNode *)child->node;
+            gn = child->node.geo;
             gd = ((GeoData *)values->data)[index];
             if (gn->x == gd.x && gn->y == gd.y && gn->z == gd.z){
                 result = i;
@@ -154,7 +155,7 @@ int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataTyp
             }
 //        } else if (child->type = CAT && values->type == CAT) {
         } else { //categorical
-            cn = (CatNode *)child->node;
+            cn = child->node.cat;
             cd = ((CatData *)values->data)[index];
             if (cn->category == cd.category){
                 result = i;
