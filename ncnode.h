@@ -31,10 +31,6 @@ typedef struct NcNode {
     int sharedContent;
 } NcNode;
 
-typedef struct TimeNode {
-    Timeseries *timeseries;
-} TimeNode;
-
 typedef struct NcNodeStack {
     NcNode *node;
     struct NcNodeStack *next;
@@ -43,7 +39,6 @@ typedef struct NcNodeStack {
 NcNode *newNcNode(NcDataType type);
 NcNode *newGeoNode(int x, int y, int z);
 NcNode *newCatNode(int category);
-NcNode *newTimeNode();
 
 NcNodeStack *newNcNodeStack();
 void push(NcNodeStack *self, NcNode *node);

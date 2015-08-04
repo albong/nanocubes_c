@@ -3,13 +3,10 @@
 
 static GeoNode *makeGeoNode(int x, int y, int z);
 static CatNode *makeCatNode(int category);
-static TimeNode *makeTimeNode();
 
 NcNode *newNcNode(NcDataType type){
     NcNode *result = malloc(sizeof(NcNode));
     
-//    result->type = type;
-//    result->node.geo = NULL;
     result->children = NULL;
     result->numChildren = 0;
     result->isShared = NULL;
@@ -18,11 +15,8 @@ NcNode *newNcNode(NcDataType type){
 
     if (type == GEO){
         result->node.geo = makeGeoNode(0,0,0);
-//    } else if (type == CAT){
     } else {
         result->node.cat = makeCatNode(-1);
-//    } else if (type == TIME){
-//        result->node = (void *)makeTimeNode();
     }
 
     return result;
@@ -44,11 +38,6 @@ NcNode *newCatNode(int category){
     return result;
 }
 
-//NcNode *newTimeNode(){
-//    NcNode *result = newNcNode(TIME);
-//    return result;
-//}
-
 GeoNode *makeGeoNode(int x, int y, int z){
     GeoNode *result = malloc(sizeof(GeoNode));
     result->x = x;
@@ -62,12 +51,6 @@ CatNode *makeCatNode(int category){
     result->category = category;
     return result;
 }
-
-//TimeNode *makeTimeNode(){
-//    TimeNode *result = malloc(sizeof(TimeNode));
-//    result->timeseries = newTimeseries();
-//    return result;
-//}
 
 NcNodeStack *newNcNodeStack(){
     NcNodeStack *result = malloc(sizeof(NcNodeStack));

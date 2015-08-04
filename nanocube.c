@@ -98,7 +98,6 @@ void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList
             curr->sharedContent = 1;
         } else if (curr->content.node == NULL){ //should cover content.timeseries being null too
             if (dim == nc->numDim){
-//                curr->content = newTimeNode();
                 curr->content.timeseries = newTimeseries();
             } else {
                 if (nc->dimensions[dim] == GEO){
@@ -188,7 +187,6 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
 
     GeoNode *gn;
     CatNode *cn;
-    TimeNode *tn;
     char shared = isShared ? 'S' : 'P';
     char content = isContent ? 'C' : 'N';
     if (dim < nc->numSpatialDim){
@@ -198,8 +196,6 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
         cn = self->node.cat;
         printf("%c : CAT : %d : %c : %p\n", content, cn->category, shared, self);
     } else { //TIME
-//        tn = (TimeNode *)self->node;
-//        printf("%c : TIME :: %c : %p\n", content, shared, self);
         printf("ought not be here\n");
     }
 
