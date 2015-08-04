@@ -190,7 +190,7 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
     if (dim < nc->numSpatialDim){
         gn = self->node.geo;
         printf("%c : GEO : %d,%d,%d : %c : %p\n", content, gn->x, gn->y, gn->z, shared, self);
-    } else if (dim < nc->numCategories) {
+    } else if (dim < nc->numCategories + nc->numSpatialDim) {
         cn = self->node.cat;
         printf("%c : CAT : %d : %c : %p\n", content, cn->category, shared, self);
     } else { //TIME
