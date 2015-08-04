@@ -6,7 +6,7 @@
 
 typedef struct Nanocube {
     size_t numSpatialDim;
-    size_t numCategories;//rename to numCategoricalDim
+    size_t numCategoricalDim;//rename to numCategoricalDim
     int *categories; //do we even use this?  I doubt it
     NcNode *root;
 
@@ -15,7 +15,7 @@ typedef struct Nanocube {
     size_t numDim;
 } Nanocube;
 
-Nanocube *newNanocube(size_t numSpatialDim, size_t numCategories);
+Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim);
 void addToNanocube(Nanocube *nc, int time, unsigned long long count, ...);
 void printNanocube(Nanocube *self);
 

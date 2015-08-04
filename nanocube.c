@@ -8,12 +8,12 @@
 static void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
 static void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube *nc, int dim);
 
-Nanocube *newNanocube(size_t numSpatialDim, size_t numCategories){
+Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim){
     Nanocube *result = malloc(sizeof(Nanocube));
     int i;
     
     result->numSpatialDim = numSpatialDim;
-    result->numCategories = numCategories;
+    result->numCategoricalDim = numCategoricalDim;
 
     if (numSpatialDim > 0){
         result->root = newGeoNode(0,0,0);
@@ -21,8 +21,8 @@ Nanocube *newNanocube(size_t numSpatialDim, size_t numCategories){
         result->root = newCatNode(-1);
     }
 
-    result->numDim = numSpatialDim + numCategories;
-    result->dimensions = malloc(sizeof(NcDataType) * (numSpatialDim + numCategories));
+    result->numDim = numSpatialDim + numCategoricalDim;
+    result->dimensions = malloc(sizeof(NcDataType) * (numSpatialDim + numCategoricalDim));
     for (i = 0; i < result->numDim; i++){
         if (i < numSpatialDim){
             result->dimensions[i] = GEO;
@@ -44,7 +44,7 @@ void addToNanocube(Nanocube *nc, int time, unsigned long long count, ...){
     int y = va_arg(input, int);
     data = newGeoData(x, y, MAX_GEO_DEPTH);
     curr = data;
-    for (i = 1; i < (nc->numSpatialDim + nc->numCategories); i++){//we always must have at least one spatial dim
+    for (i = 1; i < (nc->numSpatialDim + nc->numCategoricalDim); i++){//we always must have at least one spatial dim
         if (i < nc->numSpatialDim){
             x = va_arg(input, int);
             y = va_arg(input, int);
@@ -167,12 +167,16 @@ NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values, i
 
 void printNanocube(Nanocube *self){
     printf("Num spatial dimensions: %d\n", self->numSpatialDim);//size_t is not a %d
-    printf("Num categorical dimensions: %d\n", self->numCategories);//size_t is not a %d
+    printf("Num categorical dimensions: %d\n", self->numCategoricalDim);//size_t is not a %d
     NcNode *curr = self->root;
     printNode(curr, 0, 0, 0, self, 0);
 }
 
 void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube *nc, int dim){
+    /*
+        Should rewrite so that if a link isn't proper it only prints the address
+    */
+
     if (self == NULL){
         return;
     }
@@ -190,7 +194,7 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
     if (dim < nc->numSpatialDim){
         gn = self->node.geo;
         printf("%c : GEO : %d,%d,%d : %c : %p\n", content, gn->x, gn->y, gn->z, shared, self);
-    } else if (dim < nc->numCategories + nc->numSpatialDim) {
+    } else if (dim < nc->numCategoricalDim + nc->numSpatialDim) {
         cn = self->node.cat;
         printf("%c : CAT : %d : %c : %p\n", content, cn->category, shared, self);
     } else { //TIME

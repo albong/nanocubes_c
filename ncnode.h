@@ -17,8 +17,6 @@ typedef struct CatNode {
 } CatNode;
 
 typedef struct NcNode {
-//    NcDataType type;
-//    void *node;
     union {
         GeoNode *geo;
         CatNode *cat;
@@ -26,7 +24,6 @@ typedef struct NcNode {
     struct NcNode **children; //array
     int numChildren;
     int *isShared; //array - rename isChildShared
-//    struct NcNode *content;
     union {
         struct NcNode *node;
         Timeseries *timeseries;
@@ -47,10 +44,6 @@ NcNode *newNcNode(NcDataType type);
 NcNode *newGeoNode(int x, int y, int z);
 NcNode *newCatNode(int category);
 NcNode *newTimeNode();
-
-//static GeoNode *makeGeoNode(int x, int y, int z);
-//static CatNode *makeCatNode(int category);
-//static TimeNode *makeTimeNode();
 
 NcNodeStack *newNcNodeStack();
 void push(NcNodeStack *self, NcNode *node);
