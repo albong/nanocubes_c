@@ -3,6 +3,7 @@
 
 #include "timeseries.h"
 #include "ncdata.h"
+#include "nckey.h"
 
 #define MAX_GEO_DEPTH 5
 
@@ -17,10 +18,14 @@ typedef struct CatNode {
 } CatNode;
 
 typedef struct NcNode {
+//    union {
+//        GeoNode *geo;
+//        CatNode *cat;
+//    } node;
     union {
-        GeoNode *geo;
-        CatNode *cat;
-    } node;
+        GeoKey geo;
+        CatKey cat;
+    } key;
     struct NcNode **children; //array
     int numChildren;
     int *isShared; //array - rename isChildShared

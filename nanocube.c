@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "nckey.h"
+
 //static void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated);
 static void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
 static void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube *nc, int dim);
@@ -15,11 +17,7 @@ Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim){
     result->numSpatialDim = numSpatialDim;
     result->numCategoricalDim = numCategoricalDim;
 
-    if (numSpatialDim > 0){
-        result->root = newGeoNode(0,0,0);
-    } else {
-        result->root = newCatNode(-1);
-    }
+    result->root = newGeoNode(0,0,0);
 
     result->numDim = numSpatialDim + numCategoricalDim;
     result->dimensions = malloc(sizeof(NcDataType) * (numSpatialDim + numCategoricalDim));
@@ -103,7 +101,7 @@ void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList
                 if (nc->dimensions[dim] == GEO){
                     curr->content.node = newGeoNode(0,0,0);
                 } else {
-                    curr->content.node = newCatNode(-1);
+                    curr->content.node = newCatNode(0);
                 }
             }
             curr->sharedContent = 0;
@@ -185,16 +183,16 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
         printf(" ");
     }
 
-    GeoNode *gn;
-    CatNode *cn;
+    unsigned char z;
+    unsigned long long x, y, category;
     char shared = isShared ? 'S' : 'P';
     char content = isContent ? 'C' : 'N';
     if (dim < nc->numSpatialDim){
-        gn = self->node.geo;
-        printf("%c : GEO : %d,%d,%d : %c : %p\n", content, gn->x, gn->y, gn->z, shared, self);
+        z = decodeGeoKey(self->key.geo, &x, &y);
+        printf("%c : GEO : %lu,%lu,%c : %c : %p\n", content, x, y, z, shared, self);
     } else if (dim < nc->numCategoricalDim + nc->numSpatialDim) {
-        cn = self->node.cat;
-        printf("%c : CAT : %d : %c : %p\n", content, cn->category, shared, self);
+        category = decodeCatKey(self->key.cat);
+        printf("%c : CAT : %lu : %c : %p\n", content, category, shared, self);
     } else { //TIME
         printf("ought not be here\n");
     }

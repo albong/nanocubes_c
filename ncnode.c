@@ -1,8 +1,8 @@
 #include "ncnode.h"
 #include <stdlib.h>
 
-static GeoNode *makeGeoNode(int x, int y, int z);
-static CatNode *makeCatNode(int category);
+//static GeoNode *makeGeoNode(int x, int y, int z);
+//static CatNode *makeCatNode(int category);
 
 NcNode *newNcNode(NcDataType type){
     NcNode *result = malloc(sizeof(NcNode));
@@ -13,31 +13,29 @@ NcNode *newNcNode(NcDataType type){
     result->content.node = NULL;
     result->sharedContent = 0;
 
-    if (type == GEO){
-        result->node.geo = makeGeoNode(0,0,0);
-    } else {
-        result->node.cat = makeCatNode(-1);
-    }
+//    if (type == GEO){
+        //seems we may need to ammend the signature to take a pointer to fill in
+        //uses less memory to not hold a pointer, just to use the address
+//        result->node.geo = makeGeoNode(0,0,0);
+//    } else {
+//        result->node.cat = makeCatNode(-1);
+//    }
 
     return result;
 }
 
 NcNode *newGeoNode(int x, int y, int z){
     NcNode *result = newNcNode(GEO);
-    GeoNode *node = result->node.geo;
-    node->x = x;
-    node->y = y;
-    node->z = z;
+    newGeoKey(&result->key.geo, x, y, z);
     return result;
 }
 
 NcNode *newCatNode(int category){
     NcNode *result = newNcNode(CAT);
-    CatNode *node = result->node.cat;
-    node->category = category;
+    newCatKey(&result->key.cat, category);
     return result;
 }
-
+/*
 GeoNode *makeGeoNode(int x, int y, int z){
     GeoNode *result = malloc(sizeof(GeoNode));
     result->x = x;
@@ -51,7 +49,7 @@ CatNode *makeCatNode(int category){
     result->category = category;
     return result;
 }
-
+*/
 NcNodeStack *newNcNodeStack(){
     NcNodeStack *result = malloc(sizeof(NcNodeStack));
     result->node = NULL;
@@ -90,24 +88,30 @@ NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index, NcDataTy
     NcNode *child;
     GeoData gd;
     CatData cd;
-    GeoNode *gn;
-    CatNode *cn;
+//    GeoNode *gn;
+//    CatNode *cn;
     int i;
+    unsigned long long x, y, cat;
+    unsigned char z;
     for (i = 0; i < self->numChildren; i++){
         child = self->children[i];
 //        if (child->type == GEO && values->type == GEO){
         if (type == GEO){
-            gn = child->node.geo;
+//            gn = child->node.geo;
+            z = decodeGeoKey(child->key.geo, &x, &y);
             gd = ((GeoData *)values->data)[index];
-            if (gn->x == gd.x && gn->y == gd.y && gn->z == gd.z){
+//            if (gn->x == gd.x && gn->y == gd.y && gn->z == gd.z){
+            if (x == gd.x && y == gd.y && z == gd.z){
                 result = child;
                 break;
             }
 //        } else if (child->type = CAT && values->type == CAT) {
         } else { //categorical
-            cn = child->node.cat;
+//            cn = child->node.cat;
+            cat = decodeCatKey(child->key.cat);
             cd = ((CatData *)values->data)[index];
-            if (cn->category == cd.category){
+            if (cat == cd.category){
+//            if (cn->category == cd.category){
                 result = child;
                 break;
             }
@@ -126,21 +130,27 @@ int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataTyp
     GeoNode *gn;
     CatNode *cn;
     int i;
+    unsigned long long x, y, cat;
+    unsigned char z;
     for (i = 0; i < self->numChildren; i++){
         child = self->children[i];
 //        if (child->type == GEO && values->type == GEO){
         if (type == GEO){
-            gn = child->node.geo;
+//            gn = child->node.geo;
+            z = decodeGeoKey(child->key.geo, &x, &y);
             gd = ((GeoData *)values->data)[index];
-            if (gn->x == gd.x && gn->y == gd.y && gn->z == gd.z){
+            if (x == gd.x && y == gd.y && z == gd.z){
+//            if (gn->x == gd.x && gn->y == gd.y && gn->z == gd.z){
                 result = i;
                 break;
             }
 //        } else if (child->type = CAT && values->type == CAT) {
         } else { //categorical
-            cn = child->node.cat;
+//            cn = child->node.cat;
+            cat = decodeCatKey(child->key.cat);
             cd = ((CatData *)values->data)[index];
-            if (cn->category == cd.category){
+            if (cat == cd.category){
+//            if (cn->category == cd.category){
                 result = i;
                 break;
             }
@@ -179,7 +189,8 @@ NcNode *replaceChild(NcNode *self, int index){
 NcNode *shallowCopyNode(NcNode *self){
     NcNode *copy = malloc(sizeof(NcNode));
 //    copy->type = self->type;
-    copy->node = self->node; //this may be bad, may want to deep copy this
+//    copy->node = self->node; //this may be bad, may want to deep copy this
+    copy->key = self->key;
 
     if (self->content.node != NULL){
         copy->content.node = self->content.node;
