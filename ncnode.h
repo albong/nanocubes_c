@@ -7,28 +7,14 @@
 
 #define MAX_GEO_DEPTH 5
 
-typedef struct GeoNode {
-    int x;
-    int y;
-    int z;
-} GeoNode;
-
-typedef struct CatNode {
-    int category;
-} CatNode;
-
 typedef struct NcNode {
-//    union {
-//        GeoNode *geo;
-//        CatNode *cat;
-//    } node;
     union {
-        GeoKey geo;
+        GeoKey geo; //instead of a struct, have a char * - less memory due to alignment
         CatKey cat;
     } key;
     struct NcNode **children; //array
     int numChildren;
-    int *isShared; //array - rename isChildShared
+    int *isShared; //array - rename isChildShared - replace with char *, put sharedContent here too
     union {
         struct NcNode *node;
         Timeseries *timeseries;
@@ -50,12 +36,11 @@ void push(NcNodeStack *self, NcNode *node);
 NcNode *pop(NcNodeStack *self);
 int stackEmpty(NcNodeStack *self);
 
-NcNode *getMatchingChild(NcNode *self, NcValueChain *values, int index, NcDataType type);
 int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataType type);
 
 NcNode *newProperChild(NcNode *self, NcValueChain *values, int index);
 NcNode *replaceChild(NcNode *self, int childInd);
-NcNode *shallowCopyNode(NcNode *self);
+NcNode *shallowCopyNode(NcNode *self); //investigate where this is used from, may be only for timeseries
 
 int nodeInList(NcNode *self, NcNode **list, size_t size);
 
