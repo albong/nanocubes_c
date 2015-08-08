@@ -15,13 +15,13 @@ NcNode *newNcNode(NcDataType type){
 
 NcNode *newGeoNode(int x, int y, int z){
     NcNode *result = newNcNode(GEO);
-    newGeoKey(&result->key.geo, x, y, z);
+    result->key.geo = newGeoKey(x, y, z);
     return result;
 }
 
 NcNode *newCatNode(int category){
     NcNode *result = newNcNode(CAT);
-    newCatKey(&result->key.cat, category);
+    result->key.cat = newCatKey(category);
     return result;
 }
 

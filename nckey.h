@@ -13,10 +13,10 @@ typedef struct CatKey {
     unsigned char numBytes;
 } CatKey;
 
-GeoKey *newGeoKey(GeoKey *result, unsigned long long x, unsigned long long y, unsigned char z);
-CatKey *newCatKey(CatKey *result, unsigned long long category);
+unsigned char *newGeoKey(unsigned long long x, unsigned long long y, unsigned char z);
+unsigned char *newCatKey(unsigned long long category);
 
-unsigned char decodeGeoKey(GeoKey self, unsigned long long *x, unsigned long long *y);
-unsigned long long decodeCatKey(CatKey self);
+unsigned char decodeGeoKey(unsigned char *self, unsigned long long *x, unsigned long long *y);
+unsigned long long decodeCatKey(unsigned char *self);
 
 #endif
