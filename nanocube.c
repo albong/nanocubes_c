@@ -6,7 +6,6 @@
 
 #include "nckey.h"
 
-//static void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated);
 static void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
 static void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
 
@@ -71,7 +70,6 @@ void addToNanocube(Nanocube *nc, int time, unsigned long long count, ...){
     }
 */
     size_t numUpdated = 0;
-//    add(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
     addGeo(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
 }
 
@@ -90,7 +88,7 @@ void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
         
         if (curr->numChildren == 1){
             curr->content = child->content;
-            curr->sharedContent = 1;
+            setShared(curr->linkShared, 0, 1);
         } else if (curr->content.node == NULL){ //should cover content.timeseries being null too
             if (dim == nc->numDim){
                 curr->content.timeseries = newTimeseries();
@@ -101,17 +99,17 @@ void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
                     curr->content.node = newCatNode(0);
                 }
             }
-            curr->sharedContent = 0;
+            setShared(curr->linkShared, 0, 0);
             update = 1;
-        } else if (curr->sharedContent && !nodeInList(curr, updatedList, *numUpdated)) {
+        } else if (checkShared(curr->linkShared, 0) && !nodeInList(curr, updatedList, *numUpdated)) {
             if (dim < nc->numDim){
                 curr->content.node = shallowCopyNode(curr->content.node);
             } else {
                 curr->content.timeseries = deepCopyTimeseries(curr->content.timeseries);
             }
-            curr->sharedContent = 0;
+            setShared(curr->linkShared, 0, 0);
             update = 1;
-        } else if (!curr->sharedContent) {
+        } else if (!checkShared(curr->linkShared, 0)) {
             update = 1;
         }
         
@@ -160,24 +158,24 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
         
         if (i == 1 && curr->numChildren == 1){
             curr->content = nodes[0]->content;
-            curr->sharedContent = 1;
+            setShared(curr->linkShared, 0, 1);
         } else if (curr->content.node == NULL){ //should cover content.timeseries too
             if (dim == nc->numDim){
                 curr->content.timeseries = newTimeseries();
             } else {
                 curr->content.node = newCatNode(0);
             }
-            curr->sharedContent = 0;
+            setShared(curr->linkShared, 0, 0);
             update = 1;
-        } else if (curr->sharedContent && !nodeInList(curr, updatedList, *numUpdated)){
+        } else if (checkShared(curr->linkShared, 0) && !nodeInList(curr, updatedList, *numUpdated)){
             if (dim < nc->numDim){
                 curr->content.node = shallowCopyNode(curr->content.node);
             } else {
                 curr->content.timeseries = deepCopyTimeseries(curr->content.timeseries);
             }
-            curr->sharedContent = 0;
+            setShared(curr->linkShared, 0, 0);
             update = 1;
-        } else if (!curr->sharedContent) {
+        } else if (!checkShared(curr->linkShared, 0)) {
             update = 1;
         }
 
@@ -264,7 +262,7 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
     }
 
     if (dim != nc->numDim - 1){
-        printNode(self->content.node, padding+1, self->sharedContent, 1, nc, dim+1);
+        printNode(self->content.node, padding+1, checkShared(self->linkShared, 0), 1, nc, dim+1);
     } else {
         printTimeseries(self->content.timeseries);
     }

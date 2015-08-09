@@ -7,10 +7,10 @@ NcNode *newNcNode(NcDataType type){
     
     result->children = NULL;
     result->numChildren = 0;
-    result->linkShared = malloc(sizeof(unsigned char));
-    result->linkShared[0] = 0;
+    result->linkShared = malloc(sizeof(unsigned char) * 2);
+    result->linkShared[0] = 1;
     result->content.node = NULL;
-    result->sharedContent = 0;
+    result->linkShared[1] = 0; //set sharedContent to 0
 
     return result;
 }
@@ -119,15 +119,16 @@ NcNode *shallowCopyNode(NcNode *self){
     NcNode *copy = malloc(sizeof(NcNode));
     copy->key = self->key;
 
+    copy->linkShared = malloc(sizeof(unsigned char) * 2);
+    copy->linkShared[0] = 1;
+    copy->linkShared[1] = 0;
     if (self->content.node != NULL){
         copy->content.node = self->content.node;
-        copy->sharedContent = 1;
+        setShared(copy->linkShared, 0, 1);
     }
 
     copy->children = self->children;
     copy->numChildren = self->numChildren;
-    copy->linkShared = malloc(sizeof(unsigned char));
-    copy->linkShared[0] = 0;
     int i;
     for (i = 0; i < self->numChildren; i++){
         setShared(copy->linkShared, i + 1, 1);

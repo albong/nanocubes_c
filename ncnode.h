@@ -13,8 +13,7 @@ typedef struct NcNode {
         struct NcNode *node;
         Timeseries *timeseries;
     } content;
-    unsigned char *linkShared;
-    int sharedContent;
+    unsigned char *linkShared;//bitfield, 0 is content, i is child i-1
     struct NcNode **children; //array
     int numChildren; //can we optimize by having a GeoNode that only has four children, and a CatNode with a char *?
 } NcNode;
