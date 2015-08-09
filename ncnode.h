@@ -8,12 +8,12 @@
 #define MAX_GEO_DEPTH 5
 
 typedef struct NcNode {
-    char *key;
+    unsigned char *key;
     union {
         struct NcNode *node;
         Timeseries *timeseries;
     } content;
-    int *isShared; //array - rename isChildShared - replace with char *, put sharedContent here too
+    unsigned char *linkShared;
     int sharedContent;
     struct NcNode **children; //array
     int numChildren; //can we optimize by having a GeoNode that only has four children, and a CatNode with a char *?
@@ -42,5 +42,8 @@ NcNode *shallowCopyNode(NcNode *self); //investigate where this is used from, ma
 int nodeInList(NcNode *self, NcNode **list, size_t size);
 
 void insertData(NcNode *self, int dim, int timeDim, NcData *data);
+
+int checkShared(unsigned char *self, size_t index);
+unsigned char *setShared(unsigned char *self, size_t index, int shared);
 
 #endif

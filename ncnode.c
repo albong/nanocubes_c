@@ -1,12 +1,14 @@
 #include "ncnode.h"
 #include <stdlib.h>
+#include <limits.h>
 
 NcNode *newNcNode(NcDataType type){
     NcNode *result = malloc(sizeof(NcNode));
     
     result->children = NULL;
     result->numChildren = 0;
-    result->isShared = NULL;
+    result->linkShared = malloc(sizeof(unsigned char));
+    result->linkShared[0] = 0;
     result->content.node = NULL;
     result->sharedContent = 0;
 
@@ -102,8 +104,7 @@ NcNode *newProperChild(NcNode *self, NcValueChain *values, int index){
     }
 
     self->numChildren++;
-    self->isShared = realloc(self->isShared, sizeof(int) * self->numChildren);
-    self->isShared[self->numChildren-1] = 0;
+    setShared(self->linkShared, self->numChildren, 0);
     self->children = realloc(self->children, sizeof(NcNode *) * self->numChildren);
     self->children[self->numChildren-1] = result;
     return result;
@@ -125,10 +126,11 @@ NcNode *shallowCopyNode(NcNode *self){
 
     copy->children = self->children;
     copy->numChildren = self->numChildren;
-    copy->isShared = malloc(sizeof(self->numChildren));
+    copy->linkShared = malloc(sizeof(unsigned char));
+    copy->linkShared[0] = 0;
     int i;
     for (i = 0; i < self->numChildren; i++){
-        copy->isShared[i] = 1;
+        setShared(copy->linkShared, i + 1, 1);
     }
     return copy;
 }
@@ -153,6 +155,25 @@ void insertData(NcNode *self, int dim, int timeDim, NcData *data){
     } else {
         td = (TimeData *)data->data;
         addToTimeseries(self->content.timeseries, td->time, td->count);
+    }
+}
+
+int checkShared(unsigned char *self, size_t index){
+    unsigned char byte = self[1 + (index / CHAR_BIT)];
+    return (byte >> (index % CHAR_BIT)) & 1;
+}
+
+unsigned char *setShared(unsigned char *self, size_t index, int shared){
+    int numBytes = self[0];
+    if (((index / CHAR_BIT) + 1) > numBytes){
+        self = realloc(self, sizeof(unsigned char) * (2 + (index / CHAR_BIT)));
+        self[0] = (index / CHAR_BIT) + 1;
+    }
+    
+    if (shared){//set
+        self[1 + (index / CHAR_BIT)] |= (1 << (index % CHAR_BIT));
+    } else {//clear
+        self[1 + (index / CHAR_BIT)] &= ~(1 << (index % CHAR_BIT));
     }
 }
 
