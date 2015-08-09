@@ -9,7 +9,6 @@
 //static void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated);
 static void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
 static void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
-static void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube *nc, int dim);
 
 Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim){
     Nanocube *result = malloc(sizeof(Nanocube));
@@ -135,34 +134,42 @@ void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
 }
 
 void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
+    /*
+    As there can only be one level of categorical data, we've optimized to take advantage of this
+    */
     CatData *cd = (CatData *)(getDataAtInd(data, dim-1)->data);
     NcValueChain *chain = createCatChain(cd->category);
-    NcNodeStack *stack = trailProperPath(nc, root, chain, dim);
-
-    NcNode *child = NULL;
     NcNode *curr;
-    NcNode *content;
     int update;
-    while (!stackEmpty(stack)){
-        curr = pop(stack);
+
+    NcNode *nodes[2];
+    nodes[1] = root;
+    int childInd = getMatchingChildInd(root, chain, 0, CAT);
+    if (childInd == -1){
+        nodes[0] = newProperChild(root, chain, 0);
+    } else if (curr->isShared[childInd]){
+        nodes[0] = replaceChild(root, childInd);
+    } else {
+        nodes[0] = root->children[childInd];
+    }
+
+    int i;
+    for (i = 0; i < 2; i++){
+        curr = nodes[i];
         update = 0;
         
-        if (curr->numChildren == 1){
-            curr->content = child->content;
+        if (i == 1 && curr->numChildren == 1){
+            curr->content = nodes[0]->content;
             curr->sharedContent = 1;
-        } else if (curr->content.node == NULL){ //should cover content.timeseries being null too
+        } else if (curr->content.node == NULL){ //should cover content.timeseries too
             if (dim == nc->numDim){
                 curr->content.timeseries = newTimeseries();
             } else {
-                if (nc->dimensions[dim] == GEO){
-                    curr->content.node = newGeoNode(0,0,0);
-                } else {
-                    curr->content.node = newCatNode(0);
-                }
+                curr->content.node = newCatNode(0);
             }
             curr->sharedContent = 0;
             update = 1;
-        } else if (curr->sharedContent && !nodeInList(curr, updatedList, *numUpdated)) {
+        } else if (curr->sharedContent && !nodeInList(curr, updatedList, *numUpdated)){
             if (dim < nc->numDim){
                 curr->content.node = shallowCopyNode(curr->content.node);
             } else {
@@ -173,7 +180,7 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
         } else if (!curr->sharedContent) {
             update = 1;
         }
-        
+
         if (update){
             if (dim == nc->numDim){
                 insertData(curr, dim, nc->numDim, getDataAtInd(data, dim));
@@ -184,7 +191,6 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
             updatedList = realloc(updatedList, sizeof(NcNode *) * (*numUpdated));
             updatedList[(*numUpdated)-1] = curr->content.node;
         }
-        child = curr;
     }
 
     //cleanup - free things here; may be better to hold some preallocated initial things globally
@@ -263,3 +269,14 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
         printTimeseries(self->content.timeseries);
     }
 }
+
+void printStack(NcNodeStack *self, Nanocube *nc, int dim){
+    printf("Stack:\n");
+    NcNodeStack *curr;
+    curr = self;
+    while(curr != NULL){
+        printNode(curr->node, 0, 0, 0, nc, dim);
+        curr = curr->next;
+    }
+}
+

@@ -34,6 +34,11 @@ unsigned long long getCountAtTime(Timeseries *self, size_t time){
 }
 
 void printTimeseries(Timeseries *self){
+    if (self == NULL){
+        printf("Null timeseries\n");
+        return;
+    }
+
     int i;
     printf("startBin: %d; numBins: %d; ", self->startBin, self->numBins);
     for (i = self->startBin; i < (self->startBin + self->numBins); i++){
