@@ -7,7 +7,8 @@
 #include "nckey.h"
 
 //static void add(Nanocube *nc, NcNode *root, int x, int y, int cat, int time, int dim, NcNode **updatedList, size_t *numUpdated);
-static void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
+static void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
+static void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
 static void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube *nc, int dim);
 
 Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim){
@@ -71,16 +72,71 @@ void addToNanocube(Nanocube *nc, int time, unsigned long long count, ...){
     }
 */
     size_t numUpdated = 0;
-    add(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
+//    add(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
+    addGeo(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
 }
 
-void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
-    NcValueChain *chain;
-    if (nc->dimensions[dim-1] == GEO){
-        chain = createChain(data, GEO, dim-1);
-    } else {
-        chain = createChain(data, CAT, dim-1);
+void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
+    GeoData *gd = (GeoData *)(getDataAtInd(data, dim-1)->data);
+    NcValueChain *chain = createGeoChain(gd->x, gd->y, gd->z);
+    NcNodeStack *stack = trailProperPath(nc, root, chain, dim);
+
+    NcNode *child = NULL;
+    NcNode *curr;
+    NcNode *content;
+    int update;
+    while (!stackEmpty(stack)){
+        curr = pop(stack);
+        update = 0;
+        
+        if (curr->numChildren == 1){
+            curr->content = child->content;
+            curr->sharedContent = 1;
+        } else if (curr->content.node == NULL){ //should cover content.timeseries being null too
+            if (dim == nc->numDim){
+                curr->content.timeseries = newTimeseries();
+            } else {
+                if (nc->dimensions[dim] == GEO){
+                    curr->content.node = newGeoNode(0,0,0);
+                } else {
+                    curr->content.node = newCatNode(0);
+                }
+            }
+            curr->sharedContent = 0;
+            update = 1;
+        } else if (curr->sharedContent && !nodeInList(curr, updatedList, *numUpdated)) {
+            if (dim < nc->numDim){
+                curr->content.node = shallowCopyNode(curr->content.node);
+            } else {
+                curr->content.timeseries = deepCopyTimeseries(curr->content.timeseries);
+            }
+            curr->sharedContent = 0;
+            update = 1;
+        } else if (!curr->sharedContent) {
+            update = 1;
+        }
+        
+        if (update){
+            if (dim == nc->numDim){
+                insertData(curr, dim, nc->numDim, getDataAtInd(data, dim));
+            } else if (dim < nc->numSpatialDim){
+                addGeo(nc, curr->content.node, data, dim+1, updatedList, numUpdated);
+            } else {
+                addCat(nc, curr->content.node, data, dim+1, updatedList, numUpdated);
+            }
+            (*numUpdated)++;
+            updatedList = realloc(updatedList, sizeof(NcNode *) * (*numUpdated));
+            updatedList[(*numUpdated)-1] = curr->content.node;
+        }
+        child = curr;
     }
+
+    //cleanup - free things here; may be better to hold some preallocated initial things globally
+}
+
+void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
+    CatData *cd = (CatData *)(getDataAtInd(data, dim-1)->data);
+    NcValueChain *chain = createCatChain(cd->category);
     NcNodeStack *stack = trailProperPath(nc, root, chain, dim);
 
     NcNode *child = NULL;
@@ -122,7 +178,7 @@ void add(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList
             if (dim == nc->numDim){
                 insertData(curr, dim, nc->numDim, getDataAtInd(data, dim));
             } else {
-                add(nc, curr->content.node, data, dim+1, updatedList, numUpdated);
+                addCat(nc, curr->content.node, data, dim+1, updatedList, numUpdated);
             }
             (*numUpdated)++;
             updatedList = realloc(updatedList, sizeof(NcNode *) * (*numUpdated));
