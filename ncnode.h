@@ -12,14 +12,14 @@ typedef struct NcNode {
         char *geo; //instead of a struct, have a char * - less memory due to alignment
         char *cat;
     } key;
-    struct NcNode **children; //array
-    int numChildren; //can we optimize by having a GeoNode that only has four children, and a CatNode with a char *?
-    int *isShared; //array - rename isChildShared - replace with char *, put sharedContent here too
     union {
         struct NcNode *node;
         Timeseries *timeseries;
     } content;
+    int *isShared; //array - rename isChildShared - replace with char *, put sharedContent here too
     int sharedContent;
+    struct NcNode **children; //array
+    int numChildren; //can we optimize by having a GeoNode that only has four children, and a CatNode with a char *?
 } NcNode;
 
 typedef struct NcNodeStack {
