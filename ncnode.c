@@ -15,13 +15,13 @@ NcNode *newNcNode(NcDataType type){
 
 NcNode *newGeoNode(int x, int y, int z){
     NcNode *result = newNcNode(GEO);
-    result->key.geo = newGeoKey(x, y, z);
+    result->key = newGeoKey(x, y, z);
     return result;
 }
 
 NcNode *newCatNode(int category){
     NcNode *result = newNcNode(CAT);
-    result->key.cat = newCatKey(category);
+    result->key = newCatKey(category);
     return result;
 }
 
@@ -69,14 +69,14 @@ int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataTyp
     for (i = 0; i < self->numChildren; i++){
         child = self->children[i];
         if (type == GEO){
-            z = decodeGeoKey(child->key.geo, &x, &y);
+            z = decodeGeoKey(child->key, &x, &y);
             gd = ((GeoData *)values->data)[index];
             if (x == gd.x && y == gd.y && z == gd.z){
                 result = i;
                 break;
             }
         } else { //categorical
-            cat = decodeCatKey(child->key.cat);
+            cat = decodeCatKey(child->key);
             cd = ((CatData *)values->data)[index];
             if (cat == cd.category){
                 result = i;

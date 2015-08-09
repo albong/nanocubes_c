@@ -250,10 +250,10 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
     char shared = isShared ? 'S' : 'P';
     char content = isContent ? 'C' : 'N';
     if (dim < nc->numSpatialDim){
-        z = decodeGeoKey(self->key.geo, &x, &y);
+        z = decodeGeoKey(self->key, &x, &y);
         printf("%c : GEO : %lu,%lu,%c : %c : %p\n", content, x, y, z, shared, self);
     } else if (dim < nc->numCategoricalDim + nc->numSpatialDim) {
-        category = decodeCatKey(self->key.cat);
+        category = decodeCatKey(self->key);
         printf("%c : CAT : %lu : %c : %p\n", content, category, shared, self);
     } else { //TIME
         printf("ought not be here\n");

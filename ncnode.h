@@ -8,10 +8,7 @@
 #define MAX_GEO_DEPTH 5
 
 typedef struct NcNode {
-    union {
-        char *geo; //instead of a struct, have a char * - less memory due to alignment
-        char *cat;
-    } key;
+    char *key;
     union {
         struct NcNode *node;
         Timeseries *timeseries;
