@@ -15,7 +15,7 @@ typedef struct NcNode {
     } content;
     unsigned char *linkShared;//bitfield, 0 is content, i is child i-1
     struct NcNode **children; //array
-    int numChildren; //can we optimize by having a GeoNode that only has four children, and a CatNode with a char *?
+    size_t numChildren; //sizeof(size_t) should be <= sizeof(<pointer>), no extra padding
 } NcNode;
 
 typedef struct CatNode {
