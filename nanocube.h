@@ -5,13 +5,10 @@
 #include "ncdata.h"
 
 typedef struct Nanocube {
-    size_t numSpatialDim;
-    size_t numCategoricalDim;//rename to numCategoricalDim
-    int *categories; //do we even use this?  I doubt it
     NcNode *root;
-
-    //do we need to have these and the above counts?
-    NcDataType *dimensions; //array
+    NcDataType *dimensions; //array - can we remove this and just use the below?
+    size_t numSpatialDim;
+    size_t numCategoricalDim;
 } Nanocube;
 
 Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim);
