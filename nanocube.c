@@ -70,6 +70,7 @@ void addToNanocube(Nanocube *nc, size_t time, unsigned long long count, ...){
 */
     size_t numUpdated = 0;
     addGeo(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
+    freeData(data);
 }
 
 void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){

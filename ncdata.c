@@ -93,3 +93,15 @@ NcData *getDataAtInd(NcData *self, size_t index){
     }
     return curr;
 }
+
+void freeData(NcData *self){
+    NcData *curr = self;
+    NcData *next;
+    while (curr != NULL){
+        free(curr->data);
+        next = curr->next;
+        free(curr);
+        curr = next;
+    }
+}
+

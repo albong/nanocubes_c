@@ -41,5 +41,6 @@ NcData *newGeoData(unsigned long long x, unsigned long long y, unsigned char z);
 NcData *newCatData(unsigned long long category);
 NcData *newTimeData(size_t time, unsigned long long count);
 NcData *getDataAtInd(NcData *self, size_t index);
+void freeData(NcData *self);
 
 #endif
