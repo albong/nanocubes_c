@@ -144,8 +144,8 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
 
     NcNode *nodes[2];
     nodes[1] = root;
-    int childInd = getMatchingChildInd(root, chain, 0, CAT);
-    if (childInd == -1){
+    size_t childInd = getMatchingChildInd(root, chain, 0, CAT);
+    if (childInd == ((size_t)-1)){
         nodes[0] = newProperCatChild(root, chain, 0); //replace the stuff here with childless cat stuff
     } else if (checkShared(curr->linkShared, childInd+1)){
         nodes[0] = replaceChild(root, childInd, 1);
@@ -202,9 +202,9 @@ NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values, i
     push(stack, root);
     NcNode *curr = root;
     NcNode *child = NULL;
-    int childInd = -1;
+    size_t childInd = -1;
 
-    int i;
+    size_t i;
     for (i = 0; i < values->num; i++){
         if (nc->dimensions[dim-1] == GEO){
             childInd = getMatchingChildInd(curr, values, i, GEO);
@@ -212,7 +212,7 @@ NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values, i
             childInd = getMatchingChildInd(curr, values, i, CAT);
         }
 
-        if (childInd == -1){
+        if (childInd == ((size_t)-1)){
             child = newProperChild(curr, values, i);
         } else if (checkShared(curr->linkShared, childInd)){
             child = replaceChild(curr, childInd+1, 0);
