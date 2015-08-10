@@ -12,7 +12,6 @@ typedef struct Nanocube {
 
     //do we need to have these and the above counts?
     NcDataType *dimensions; //array
-    size_t numDim;
 } Nanocube;
 
 Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim);

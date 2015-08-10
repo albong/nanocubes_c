@@ -18,9 +18,8 @@ Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim){
 
     result->root = newGeoNode(0,0,0);
 
-    result->numDim = numSpatialDim + numCategoricalDim;
     result->dimensions = malloc(sizeof(NcDataType) * (numSpatialDim + numCategoricalDim));
-    for (i = 0; i < result->numDim; i++){
+    for (i = 0; i < (numSpatialDim + numCategoricalDim); i++){
         if (i < numSpatialDim){
             result->dimensions[i] = GEO;
         } else {
@@ -90,7 +89,7 @@ void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
             curr->content = child->content;
             setShared(curr->linkShared, 0, 1);
         } else if (curr->content.node == NULL){ //should cover content.timeseries being null too
-            if (dim == nc->numDim){
+            if (dim == (nc->numSpatialDim + nc->numCategoricalDim)){
                 curr->content.timeseries = newTimeseries();
             } else {
                 if (nc->dimensions[dim] == GEO){
@@ -102,7 +101,7 @@ void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
             setShared(curr->linkShared, 0, 0);
             update = 1;
         } else if (checkShared(curr->linkShared, 0) && !nodeInList(curr, updatedList, *numUpdated)) {
-            if (dim < nc->numDim){
+            if (dim < (nc->numSpatialDim + nc->numCategoricalDim)){
                 curr->content.node = shallowCopyNode(curr->content.node);
             } else {
                 curr->content.timeseries = deepCopyTimeseries(curr->content.timeseries);
@@ -114,8 +113,8 @@ void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
         }
         
         if (update){
-            if (dim == nc->numDim){
-                insertData(curr, dim, nc->numDim, getDataAtInd(data, dim));
+            if (dim == (nc->numSpatialDim + nc->numCategoricalDim)){
+                insertData(curr, dim, (nc->numSpatialDim + nc->numCategoricalDim), getDataAtInd(data, dim));
             } else if (dim < nc->numSpatialDim){
                 addGeo(nc, curr->content.node, data, dim+1, updatedList, numUpdated);
             } else {
@@ -162,7 +161,7 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
             curr->content = nodes[0]->content;
             setShared(curr->linkShared, 0, 1);
         } else if (curr->content.node == NULL){ //should cover content.timeseries too
-            if (dim == nc->numDim){
+            if (dim == (nc->numSpatialDim + nc->numCategoricalDim)){
                 curr->content.timeseries = newTimeseries();
             } else {
                 curr->content.node = newCatNode(0);
@@ -170,7 +169,7 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
             setShared(curr->linkShared, 0, 0);
             update = 1;
         } else if (checkShared(curr->linkShared, 0) && !nodeInList(curr, updatedList, *numUpdated)){
-            if (dim < nc->numDim){
+            if (dim < (nc->numSpatialDim + nc->numCategoricalDim)){
                 curr->content.node = shallowCopyNode(curr->content.node);
             } else {
                 curr->content.timeseries = deepCopyTimeseries(curr->content.timeseries);
@@ -182,8 +181,8 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
         }
 
         if (update){
-            if (dim == nc->numDim){
-                insertData(curr, dim, nc->numDim, getDataAtInd(data, dim));
+            if (dim == (nc->numSpatialDim + nc->numCategoricalDim)){
+                insertData(curr, dim, (nc->numSpatialDim + nc->numCategoricalDim), getDataAtInd(data, dim));
             } else {
                 addCat(nc, curr->content.node, data, dim+1, updatedList, numUpdated);
             }
@@ -266,7 +265,7 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
         }
     }
 
-    if (dim != nc->numDim - 1){
+    if (dim != (nc->numSpatialDim + nc->numCategoricalDim) - 1){
         printNode(self->content.node, padding+1, checkShared(self->linkShared, 0), 1, nc, dim+1);
     } else {
         printTimeseries(self->content.timeseries);
