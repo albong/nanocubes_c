@@ -73,6 +73,35 @@ void addToNanocube(Nanocube *nc, size_t time, unsigned long long count, ...){
     freeData(data);
 }
 
+void addArraysToNanocube(Nanocube *nc, unsigned long long *x, unsigned long long *y, unsigned long long *cat, size_t time, unsigned long long count){
+    va_list input;
+    int i;
+    NcData *data;
+    NcData *curr;
+
+    data = newGeoData(x[0], y[0], MAX_GEO_DEPTH);
+    curr = data;
+
+    //add the geodata
+    for (i = 1; i < nc->numSpatialDim; i++){
+        curr->next = newGeoData(x[i], y[i], MAX_GEO_DEPTH);
+        curr = curr->next;
+    }
+
+    //add the catdata
+    for (i = 0; i < nc->numCategoricalDim; i++){
+        curr->next = newCatData(cat[i]);
+        curr = curr->next;
+    }
+
+    //add the time data
+    curr->next = newTimeData(time, count);
+
+    size_t numUpdated = 0;
+    addGeo(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
+    freeData(data);
+}
+
 void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
     GeoData *gd = (GeoData *)(getDataAtInd(data, dim-1)->data);
     NcValueChain *chain = createGeoChain(gd->x, gd->y, gd->z);
