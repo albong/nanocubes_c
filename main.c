@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #define BUFFER_SIZE 1024
+#define TEST 0
 
 void usage(){
     printf("Usage: nanocube -g number -c number -p port\n");
@@ -22,7 +23,7 @@ void readIn(Nanocube *nc){
     char DELIMITER = ',';
     char lineBuffer[BUFFER_SIZE];
     char dataBuffer[BUFFER_SIZE];
-    int i, j;
+    int i, j = 0;
     int geoFound, catFound, timeFound, countFound;
     unsigned long long *x = malloc(sizeof(unsigned long long) * nc->numSpatialDim);
     unsigned long long *y = malloc(sizeof(unsigned long long) * nc->numSpatialDim);
@@ -55,15 +56,18 @@ void readIn(Nanocube *nc){
                 } else {
                     //add me
                     printf("SUCCESS\n");
+                    printf("%d, %d\n", x[0], y[0]);
                     addArraysToNanocube(nc, x, y, cat, time, count);
                 }
                 break;
             } else if (lineBuffer[i] == DELIMITER){
                 dataBuffer[j] = '\0';
+                printf("%d,%d,%d,%d\n", geoFound, catFound, timeFound, countFound);
 
                 if (geoFound < (nc->numSpatialDim * 2)){
                     if (geoFound % 2 == 0){
                         x[geoFound/2] = strtoull(dataBuffer, NULL, 10);
+                        printf("%s\n", dataBuffer);
                     } else {
                         y[geoFound/2] = strtoull(dataBuffer, NULL, 10);
                     }
@@ -84,6 +88,7 @@ void readIn(Nanocube *nc){
 
                 j = 0;
             } else {
+                printf("%s - %c - %d\n", dataBuffer, lineBuffer[i], j);
                 dataBuffer[j] = lineBuffer[i];
                 j++;
             }
@@ -96,7 +101,8 @@ void test(){
     Nanocube *nc = newNanocube(1, 1);
     printf("Made a nanocube!\n");
     //addToNanocube(nc, 1, 5, 1, 2);
-    addToNanocube(nc, 2, 142123, 1, 5, 1);
+    //addToNanocube(nc, 2, 142123, 1, 5, 1);
+    addToNanocube(nc, 2, 142123, 15, 5, 1);
     printf("Added to the nanocube!\n");
     printNanocube(nc);
 
@@ -150,9 +156,13 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
-    Nanocube *nc = newNanocube(numGeo, numCat);
-    readIn(nc);
-    printNanocube(nc);
+    if (!TEST){
+       Nanocube *nc = newNanocube(numGeo, numCat);
+       readIn(nc);
+       printNanocube(nc);
+    } else {
+        test();
+    }
 
 
 
