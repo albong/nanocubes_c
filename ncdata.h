@@ -17,13 +17,13 @@ typedef struct NcData {
 } NcData;
 
 typedef struct GeoData {
-    int x;
-    int y;
-    int z;
+    unsigned long long x;
+    unsigned long long y;
+    unsigned char z;
 } GeoData;
 
 typedef struct CatData {
-    int category;
+    unsigned long long category;
 } CatData;
 
 typedef struct TimeData {
@@ -32,14 +32,14 @@ typedef struct TimeData {
 } TimeData;
 
 NcValueChain *createChain(NcData *self, NcDataType type, int dimension);
-NcValueChain *createGeoChain(int x, int y, size_t depth);
-NcValueChain *createCatChain(int category);
+NcValueChain *createGeoChain(unsigned long long x, unsigned long long y, unsigned char depth);
+NcValueChain *createCatChain(unsigned long long category);
 void freeChain(NcValueChain *self);
 void printChain(NcValueChain *self);
 
-NcData *newGeoData(int x, int y, int z);
-NcData *newCatData(int category);
+NcData *newGeoData(unsigned long long x, unsigned long long y, unsigned char z);
+NcData *newCatData(unsigned long long category);
 NcData *newTimeData(size_t time, unsigned long long count);
-NcData *getDataAtInd(NcData *self, int index);
+NcData *getDataAtInd(NcData *self, size_t index);
 
 #endif

@@ -15,13 +15,13 @@ NcNode *newNcNode(NcDataType type){
     return result;
 }
 
-NcNode *newGeoNode(int x, int y, int z){
+NcNode *newGeoNode(unsigned long long x, unsigned long long y, unsigned char z){
     NcNode *result = newNcNode(GEO);
     result->key = newGeoKey(x, y, z);
     return result;
 }
 
-NcNode *newCatNode(int category){
+NcNode *newCatNode(unsigned long long category){
     NcNode *result = newNcNode(CAT);
     result->key = newCatKey(category);
     return result;
@@ -81,7 +81,7 @@ void freeStack(NcNodeStack *self){
     }
 }
 
-int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataType type){
+int getMatchingChildInd(NcNode *self, NcValueChain *values, size_t index, NcDataType type){
     int result = -1;
     
     NcNode *child;
@@ -112,7 +112,7 @@ int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataTyp
     return result;
 }
 
-NcNode *newProperChild(NcNode *self, NcValueChain *values, int index){
+NcNode *newProperChild(NcNode *self, NcValueChain *values, size_t index){
     NcNode *result;
 
     GeoData gd;
@@ -132,7 +132,7 @@ NcNode *newProperChild(NcNode *self, NcValueChain *values, int index){
     return result;
 }
 
-NcNode *newProperCatChild(NcNode *self, NcValueChain *values, int index){
+NcNode *newProperCatChild(NcNode *self, NcValueChain *values, size_t index){
     CatData cd = ((CatData *)values->data)[index];
     NcNode *result = newChildlessCatNode(cd.category);
 
@@ -144,7 +144,7 @@ NcNode *newProperCatChild(NcNode *self, NcValueChain *values, int index){
     return result;
 }
 
-NcNode *replaceChild(NcNode *self, int index, int childIsCat){
+NcNode *replaceChild(NcNode *self, size_t index, int childIsCat){
     if (childIsCat){
        self->children[index] = shallowCopyCatNode((CatNode *)self->children[index]);
     } else {

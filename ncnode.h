@@ -33,8 +33,8 @@ typedef struct NcNodeStack {
 } NcNodeStack;
 
 NcNode *newNcNode(NcDataType type);
-NcNode *newGeoNode(int x, int y, int z); //need to replace all of these with unsigned long longs
-NcNode *newCatNode(int category);
+NcNode *newGeoNode(unsigned long long x, unsigned long long y, unsigned char z); //need to replace all of these with unsigned long longs
+NcNode *newCatNode(unsigned long long category);
 NcNode *newChildlessCatNode(unsigned long long category);
 
 NcNodeStack *newNcNodeStack();
@@ -43,11 +43,11 @@ NcNode *pop(NcNodeStack *self);
 int stackEmpty(NcNodeStack *self);
 void freeStack(NcNodeStack *self);
 
-int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataType type);
+int getMatchingChildInd(NcNode *self, NcValueChain *values, size_t index, NcDataType type);
 
-NcNode *newProperChild(NcNode *self, NcValueChain *values, int index);
-NcNode *newProperCatChild(NcNode *self, NcValueChain *values, int index);
-NcNode *replaceChild(NcNode *self, int childInd, int childIsCat);
+NcNode *newProperChild(NcNode *self, NcValueChain *values, size_t index);
+NcNode *newProperCatChild(NcNode *self, NcValueChain *values, size_t index);
+NcNode *replaceChild(NcNode *self, size_t childInd, int childIsCat);
 NcNode *shallowCopyNode(NcNode *self); //investigate where this is used from, may be only for timeseries
 NcNode *shallowCopyCatNode(CatNode *self);
 

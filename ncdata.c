@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-NcValueChain *createGeoChain(int x, int y, size_t depth){
+NcValueChain *createGeoChain(unsigned long long x, unsigned long long y, unsigned char depth){
     NcValueChain *result = malloc(sizeof(NcValueChain));
     result->type = GEO;
     result->num = depth;
-    GeoData *data = malloc(sizeof(GeoData) * (depth));
+    GeoData *data = malloc(sizeof(GeoData) * depth);
     int i;
     for (i = 1; i <= depth; i++){
         data[i-1].x = x / (1 << (depth - i));
@@ -17,7 +17,7 @@ NcValueChain *createGeoChain(int x, int y, size_t depth){
     return result;
 }
 
-NcValueChain *createCatChain(int category){
+NcValueChain *createCatChain(unsigned long long category){
     NcValueChain *result = malloc(sizeof(NcValueChain));
     result->type = CAT;
     result->num = 1;
@@ -56,7 +56,7 @@ void printChain(NcValueChain *self){
     printf("\n");
 }
 
-NcData *newGeoData(int x, int y, int z){
+NcData *newGeoData(unsigned long long x, unsigned long long y, unsigned char z){
     GeoData *gd = malloc(sizeof(GeoData));
     gd->x = x;
     gd->y = y;
@@ -67,7 +67,7 @@ NcData *newGeoData(int x, int y, int z){
     return result;
 }
 
-NcData *newCatData(int category){
+NcData *newCatData(unsigned long long category){
     CatData *cd = malloc(sizeof(CatData));
     cd->category = category;
     NcData *result = malloc(sizeof(NcData));
@@ -85,8 +85,8 @@ NcData *newTimeData(size_t time, unsigned long long count){
     return result;
 }
 
-NcData *getDataAtInd(NcData *self, int index){
-    int i;
+NcData *getDataAtInd(NcData *self, size_t index){
+    size_t i;
     NcData *curr = self;
     for (i = 0; i < index; i++){
         curr = curr->next;
