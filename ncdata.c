@@ -2,21 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-NcValueChain *createChain(NcData *self, NcDataType type, int dimension){
-    NcValueChain *result = NULL;
-    GeoData *gd;
-    CatData *cd;
-    NcData *data = getDataAtInd(self, dimension);
-    if (type == GEO){
-        gd = (GeoData *)data->data;
-        result = createGeoChain(gd->x, gd->y, gd->z);
-    } else if (type == CAT){
-        cd = (CatData *)data->data;
-        result = createCatChain(cd->category);
-    }
-    return result;
-}
-
 NcValueChain *createGeoChain(int x, int y, size_t depth){
     NcValueChain *result = malloc(sizeof(NcValueChain));
     result->type = GEO;
@@ -40,6 +25,11 @@ NcValueChain *createCatChain(int category){
     data[0].category = category;
     result->data = data;
     return result;
+}
+
+void freeChain(NcValueChain *self){
+    free(self->data);
+    free(self);
 }
 
 void printChain(NcValueChain *self){

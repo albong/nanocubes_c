@@ -71,6 +71,16 @@ int stackEmpty(NcNodeStack *self){
     }
 }
 
+void freeStack(NcNodeStack *self){
+    NcNodeStack *curr = self;
+    NcNodeStack *next;
+    while(curr != NULL){
+        next = curr->next;
+        free(curr);
+        curr = next;
+    }
+}
+
 int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataType type){
     int result = -1;
     

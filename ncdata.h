@@ -34,6 +34,7 @@ typedef struct TimeData {
 NcValueChain *createChain(NcData *self, NcDataType type, int dimension);
 NcValueChain *createGeoChain(int x, int y, size_t depth);
 NcValueChain *createCatChain(int category);
+void freeChain(NcValueChain *self);
 void printChain(NcValueChain *self);
 
 NcData *newGeoData(int x, int y, int z);

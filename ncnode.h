@@ -41,6 +41,7 @@ NcNodeStack *newNcNodeStack();
 void push(NcNodeStack *self, NcNode *node);
 NcNode *pop(NcNodeStack *self);
 int stackEmpty(NcNodeStack *self);
+void freeStack(NcNodeStack *self);
 
 int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataType type);
 

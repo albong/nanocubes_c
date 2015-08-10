@@ -129,6 +129,8 @@ void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
     }
 
     //cleanup - free things here; may be better to hold some preallocated initial things globally
+    freeChain(chain);
+    freeStack(stack);
 }
 
 void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
@@ -192,6 +194,7 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
     }
 
     //cleanup - free things here; may be better to hold some preallocated initial things globally
+    freeChain(chain);
 }
 
 NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values, int dim){
