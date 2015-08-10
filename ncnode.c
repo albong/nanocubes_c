@@ -27,6 +27,18 @@ NcNode *newCatNode(int category){
     return result;
 }
 
+NcNode *newChildlessCatNode(unsigned long long category){
+    CatNode *result = malloc(sizeof(CatNode));
+
+    result->key = newCatKey(category);
+    result->content.node = NULL;
+    result->linkShared = malloc(sizeof(unsigned char) * 2);
+    result->linkShared[0] = 1;
+    result->linkShared[1] = 0; //set sharedContent to 0
+
+    return (NcNode *)result;
+}
+
 NcNodeStack *newNcNodeStack(){
     NcNodeStack *result = malloc(sizeof(NcNodeStack));
     result->node = NULL;
@@ -110,9 +122,24 @@ NcNode *newProperChild(NcNode *self, NcValueChain *values, int index){
     return result;
 }
 
-NcNode *replaceChild(NcNode *self, int index){
-    self->children[index] = shallowCopyNode(self->children[index]);
+NcNode *newProperCatChild(NcNode *self, NcValueChain *values, int index){
+    CatData cd = ((CatData *)values->data)[index];
+    NcNode *result = newChildlessCatNode(cd.category);
 
+    self->numChildren++;
+    setShared(self->linkShared, self->numChildren, 0);
+    self->children = realloc(self->children, sizeof(NcNode *) * self->numChildren);
+    self->children[self->numChildren-1] = result;
+
+    return result;
+}
+
+NcNode *replaceChild(NcNode *self, int index, int childIsCat){
+    if (childIsCat){
+       self->children[index] = shallowCopyCatNode((CatNode *)self->children[index]);
+    } else {
+       self->children[index] = shallowCopyNode(self->children[index]);
+    }
 }
 
 NcNode *shallowCopyNode(NcNode *self){
@@ -130,10 +157,25 @@ NcNode *shallowCopyNode(NcNode *self){
     copy->children = self->children;
     copy->numChildren = self->numChildren;
     int i;
-    for (i = 0; i < self->numChildren; i++){
+   for (i = 0; i < self->numChildren; i++){
         setShared(copy->linkShared, i + 1, 1);
     }
     return copy;
+}
+
+NcNode *shallowCopyCatNode(CatNode *self){
+    CatNode *copy = malloc(sizeof(CatNode));
+    copy->key = self->key;
+
+    copy->linkShared = malloc(sizeof(unsigned char) * 2);
+    copy->linkShared[0] = 1;
+    copy->linkShared[1] = 0;
+    if (self->content.node != NULL){
+        copy->content.node = self->content.node;
+        setShared(copy->linkShared, 0, 1);
+    }
+
+    return (NcNode *)copy;
 }
 
 int nodeInList(NcNode *self, NcNode **list, size_t size){

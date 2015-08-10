@@ -18,14 +18,24 @@ typedef struct NcNode {
     int numChildren; //can we optimize by having a GeoNode that only has four children, and a CatNode with a char *?
 } NcNode;
 
+typedef struct CatNode {
+    unsigned char *key;
+    union {
+        NcNode *node;
+        Timeseries *timeseries;
+    } content;
+    unsigned char *linkShared;//bitfield, 0 is content, i is child i-1
+} CatNode;
+
 typedef struct NcNodeStack {
     NcNode *node;
     struct NcNodeStack *next;
 } NcNodeStack;
 
 NcNode *newNcNode(NcDataType type);
-NcNode *newGeoNode(int x, int y, int z);
+NcNode *newGeoNode(int x, int y, int z); //need to replace all of these with unsigned long longs
 NcNode *newCatNode(int category);
+NcNode *newChildlessCatNode(unsigned long long category);
 
 NcNodeStack *newNcNodeStack();
 void push(NcNodeStack *self, NcNode *node);
@@ -35,8 +45,10 @@ int stackEmpty(NcNodeStack *self);
 int getMatchingChildInd(NcNode *self, NcValueChain *values, int index, NcDataType type);
 
 NcNode *newProperChild(NcNode *self, NcValueChain *values, int index);
-NcNode *replaceChild(NcNode *self, int childInd);
+NcNode *newProperCatChild(NcNode *self, NcValueChain *values, int index);
+NcNode *replaceChild(NcNode *self, int childInd, int childIsCat);
 NcNode *shallowCopyNode(NcNode *self); //investigate where this is used from, may be only for timeseries
+NcNode *shallowCopyCatNode(CatNode *self);
 
 int nodeInList(NcNode *self, NcNode **list, size_t size);
 

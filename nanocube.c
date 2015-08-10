@@ -144,9 +144,9 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
     nodes[1] = root;
     int childInd = getMatchingChildInd(root, chain, 0, CAT);
     if (childInd == -1){
-        nodes[0] = newProperChild(root, chain, 0);
+        nodes[0] = newProperCatChild(root, chain, 0); //replace the stuff here with childless cat stuff
     } else if (checkShared(curr->linkShared, childInd+1)){
-        nodes[0] = replaceChild(root, childInd);
+        nodes[0] = replaceChild(root, childInd, 1);
     } else {
         nodes[0] = root->children[childInd];
     }
@@ -212,7 +212,7 @@ NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values, i
         if (childInd == -1){
             child = newProperChild(curr, values, i);
         } else if (checkShared(curr->linkShared, childInd)){
-            child = replaceChild(curr, childInd+1);
+            child = replaceChild(curr, childInd+1, 0);
         } else {
             child = curr->children[childInd];
         }
@@ -257,8 +257,10 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
         printf("ought not be here\n");
     }
 
-    for (i = 0; i < self->numChildren; i++){
-        printNode(self->children[i], padding+1, checkShared(self->linkShared, i+1), 0, nc, dim);
+    if (dim < nc->numSpatialDim || decodeCatKey(self->key) == 0){
+        for (i = 0; i < self->numChildren; i++){
+            printNode(self->children[i], padding+1, checkShared(self->linkShared, i+1), 0, nc, dim);
+        }
     }
 
     if (dim != nc->numDim - 1){
