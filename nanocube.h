@@ -15,7 +15,7 @@ typedef struct Nanocube {
 } Nanocube;
 
 Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim);
-void addToNanocube(Nanocube *nc, int time, unsigned long long count, ...);
+void addToNanocube(Nanocube *nc, size_t time, unsigned long long count, ...);
 void printNanocube(Nanocube *self);
 void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube *nc, int dim);
 void printStack(NcNodeStack *self, Nanocube *nc, int dim);

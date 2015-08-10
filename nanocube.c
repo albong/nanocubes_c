@@ -29,7 +29,7 @@ Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim){
     return result; 
 }
 
-void addToNanocube(Nanocube *nc, int time, unsigned long long count, ...){
+void addToNanocube(Nanocube *nc, size_t time, unsigned long long count, ...){
     va_list input;
     int i;
     NcData *data;

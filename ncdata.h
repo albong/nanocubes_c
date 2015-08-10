@@ -27,7 +27,7 @@ typedef struct CatData {
 } CatData;
 
 typedef struct TimeData {
-    int time;
+    size_t time;
     unsigned long long count;
 } TimeData;
 
@@ -39,7 +39,7 @@ void printChain(NcValueChain *self);
 
 NcData *newGeoData(int x, int y, int z);
 NcData *newCatData(int category);
-NcData *newTimeData(int time, unsigned long long count);
+NcData *newTimeData(size_t time, unsigned long long count);
 NcData *getDataAtInd(NcData *self, int index);
 
 #endif

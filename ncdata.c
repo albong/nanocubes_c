@@ -75,7 +75,7 @@ NcData *newCatData(int category){
     result->data = cd;
     return result;
 }
-NcData *newTimeData(int time, unsigned long long count){
+NcData *newTimeData(size_t time, unsigned long long count){
     TimeData *td = malloc(sizeof(TimeData));
     td->time = time;
     td->count = count;
