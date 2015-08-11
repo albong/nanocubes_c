@@ -125,6 +125,15 @@ void test(){
 */
 }
 
+void test2(){
+    Nanocube *nc = newNanocube(1, 1);
+    addToNanocube(nc, 2, 3, 15, 5, 1);
+//    printNanocube(nc);
+//    printf("\n\n");
+    addToNanocube(nc, 5, 1, 15, 5, 1);
+//    printNanocube(nc);
+}
+
 void timeseriesTest(){
     Timeseries *ts = newTimeseries();
     addToTimeseries(ts, 5, 1);
@@ -182,7 +191,8 @@ int main(int argc, char *argv[]){
        readIn(nc);
        printNanocube(nc);
     } else {
-        test();
+//        test();
+        test2();
 //        timeseriesTest();
     }
 

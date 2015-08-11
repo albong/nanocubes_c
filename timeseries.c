@@ -69,10 +69,7 @@ Timeseries *deepCopyTimeseries(Timeseries *self){
     copy->numBins = self->numBins;
     copy->bins = malloc(sizeof(unsigned long long) * copy->numBins);
     addMemToCount(sizeof(unsigned long long) * copy->numBins);
-    size_t i;
-    for (i = copy->startBin; i < (copy->startBin + copy->numBins); i++){
-        copy->bins[i] = self->bins[i];
-    }
+    memcpy(copy->bins, self->bins, sizeof(unsigned long long) * self->numBins);
 
     return copy;
 }
