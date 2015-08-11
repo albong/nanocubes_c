@@ -1,6 +1,7 @@
 #include "nanocube.h"
 //#include "ncquery.h"
 #include "ncdata.h"
+#include "timeseries.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -102,8 +103,9 @@ void test(){
     printf("Made a nanocube!\n");
     //addToNanocube(nc, 1, 5, 1, 2);
     //addToNanocube(nc, 2, 142123, 1, 5, 1);
-    addToNanocube(nc, 2, 142123, 15, 5, 1);
     addToNanocube(nc, 10, 123, 1, 5, 1);
+    addToNanocube(nc, 2, 142123, 15, 5, 1);
+    addToNanocube(nc, 5, 789, 15, 5, 1);
     printf("Added to the nanocube!\n");
     printNanocube(nc);
 
@@ -121,6 +123,24 @@ void test(){
     printf("survived query\n");
     printResult(qResult, 0);
 */
+}
+
+void timeseriesTest(){
+    Timeseries *ts = newTimeseries();
+    addToTimeseries(ts, 5, 1);
+    printTimeseries(ts);
+    addToTimeseries(ts, 5, 1);
+    printTimeseries(ts);
+    addToTimeseries(ts, 3, 1);
+    printTimeseries(ts);
+    addToTimeseries(ts, 6, 1);
+    addToTimeseries(ts, 2, 10);
+    addToTimeseries(ts, 4, 1);
+    addToTimeseries(ts, 5, 1);
+    addToTimeseries(ts, 12, 1);
+    addToTimeseries(ts, 0, 1);
+    addToTimeseries(ts, 10, 1);
+    printTimeseries(ts);
 }
 
 int main(int argc, char *argv[]){
@@ -163,6 +183,7 @@ int main(int argc, char *argv[]){
        printNanocube(nc);
     } else {
         test();
+//        timeseriesTest();
     }
 
 

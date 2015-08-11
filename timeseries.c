@@ -1,6 +1,7 @@
 #include "timeseries.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 Timeseries *newTimeseries(){
     Timeseries *result = malloc(sizeof(Timeseries));
@@ -12,24 +13,36 @@ Timeseries *newTimeseries(){
 }
 
 void addToTimeseries(Timeseries *self, size_t time, unsigned long long count){
-    if (time < self->startBin || time >= (self->startBin + self->numBins)){
-        self->bins = realloc(self->bins, sizeof(unsigned long long) * self->numBins);
-        self->startBin = (time < self->startBin) ? time : self->startBin;
-        self->numBins = (time >= (self->startBin + self->numBins)) ? (time - self->startBin + 1) : self->numBins;
+    size_t i;
+    unsigned long long *newBins;
+
+    if (self->numBins == 0){
+        self->bins = malloc(sizeof(unsigned long long));
+        self->startBin = time;
+        self->numBins = 1;
+    } else if (time < self->startBin){
+        newBins = calloc(self->numBins + self->startBin - time, sizeof(unsigned long long));
+        memcpy(newBins + (self->startBin - time), self->bins, sizeof(unsigned long long) * self->numBins);
+        free(self->bins);
+        self->bins = newBins;
+        self->numBins = self->numBins + (self->startBin - time);
+        self->startBin = time;
+
+    } else if (time >= (self->startBin + self->numBins)){
+        self->bins = realloc(self->bins, sizeof(unsigned long long) * (self->numBins + (time - (self->startBin + self->numBins) + 1)));
+        for (i = (self->startBin + self->numBins); i <= time; i++){
+            self->bins[i - self->startBin] = 0;
+        }
+        self->numBins = self->numBins + (time - (self->startBin + self->numBins) + 1);
     }
 
-/*    if (time+1 > self->numBins){
-        self->bins = realloc(self->bins, sizeof(unsigned long long) * (time+1));
-        self->numBins = time + 1;
-    }*/
-
-    self->bins[time] = count;
+    self->bins[(time - self->startBin)] += count;
 }
 
 unsigned long long getCountAtTime(Timeseries *self, size_t time){
     unsigned long long result = 0;
-    if (time < self->numBins){
-        result = self->bins[time];
+    if (self->startBin <= time && time < (self->startBin + self->numBins)){
+        result = self->bins[time - self->startBin];
     }
     return result;
 }
@@ -43,7 +56,7 @@ void printTimeseries(Timeseries *self){
     int i;
     printf("startBin: %d; numBins: %d; ", self->startBin, self->numBins);
     for (i = self->startBin; i < (self->startBin + self->numBins); i++){
-        printf("%d:%lu ", i, self->bins[i]);
+        printf("%d:%llu ", i, self->bins[i - self->startBin]);
     }
     printf("\n");
 }
