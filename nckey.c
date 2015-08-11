@@ -9,6 +9,7 @@ unsigned char *newGeoKey(unsigned long long x, unsigned long long y, unsigned ch
 
     int numBytes = (z + 7) / CHAR_BIT;
     result = malloc(sizeof(char) * ((numBytes * 2) + 1));
+    addMemToCount(sizeof(char) * ((numBytes * 2) + 1));
 
     int i;
     for (i = numBytes - 1; i >= 0; --i){
@@ -33,6 +34,7 @@ unsigned char *newCatKey(unsigned long long category){
     numBytes = i;
 
     result = malloc(sizeof(char) * (i + 1));
+    addMemToCount(sizeof(char) * (i + 1));
     result[0] = i;
     for (i = numBytes - 1; i >= 0; --i){
         result[1 + i] = ((category >> (CHAR_BIT * i)) & 0xff);

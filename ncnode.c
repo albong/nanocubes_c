@@ -1,13 +1,16 @@
 #include "ncnode.h"
+#include "ncmem.h"
 #include <stdlib.h>
 #include <limits.h>
 
 NcNode *newNcNode(NcDataType type){
     NcNode *result = malloc(sizeof(NcNode));
+    addMemToCount(sizeof(void *) * 5);
     
     result->children = NULL;
     result->numChildren = 0;
     result->linkShared = malloc(sizeof(unsigned char) * 2);
+    addMemToCount(sizeof(unsigned char) * 2);
     result->linkShared[0] = 1;
     result->content.node = NULL;
     result->linkShared[1] = 0; //set sharedContent to 0
@@ -29,10 +32,12 @@ NcNode *newCatNode(unsigned long long category){
 
 NcNode *newChildlessCatNode(unsigned long long category){
     CatNode *result = malloc(sizeof(CatNode));
+    addMemToCount(sizeof(void *) * 3);
 
     result->key = newCatKey(category);
     result->content.node = NULL;
     result->linkShared = malloc(sizeof(unsigned char) * 2);
+    addMemToCount(sizeof(unsigned char) * 2);
     result->linkShared[0] = 1;
     result->linkShared[1] = 0; //set sharedContent to 0
 
@@ -154,9 +159,11 @@ NcNode *replaceChild(NcNode *self, size_t index, int childIsCat){
 
 NcNode *shallowCopyNode(NcNode *self){
     NcNode *copy = malloc(sizeof(NcNode));
+    addMemToCount(sizeof(void *) * 5);
     copy->key = self->key;
 
     copy->linkShared = malloc(sizeof(unsigned char) * 2);
+    addMemToCount(sizeof(unsigned char) * 2);
     copy->linkShared[0] = 1;
     copy->linkShared[1] = 0;
     if (self->content.node != NULL){
@@ -167,17 +174,20 @@ NcNode *shallowCopyNode(NcNode *self){
     copy->children = self->children;
     copy->numChildren = self->numChildren;
     int i;
-   for (i = 0; i < self->numChildren; i++){
+    for (i = 0; i < self->numChildren; i++){
         setShared(copy->linkShared, i + 1, 1);
     }
+
     return copy;
 }
 
 NcNode *shallowCopyCatNode(CatNode *self){
     CatNode *copy = malloc(sizeof(CatNode));
+    addMemToCount(sizeof(void *) * 3);
     copy->key = self->key;
 
     copy->linkShared = malloc(sizeof(unsigned char) * 2);
+    addMemToCount(sizeof(unsigned char) * 2);
     copy->linkShared[0] = 1;
     copy->linkShared[1] = 0;
     if (self->content.node != NULL){

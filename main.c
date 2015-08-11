@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #define BUFFER_SIZE 1024
-#define TEST 0
+#define TEST 1
 
 void usage(){
     printf("Usage: nanocube -g number -c number -p port\n");
@@ -103,6 +103,7 @@ void test(){
     //addToNanocube(nc, 1, 5, 1, 2);
     //addToNanocube(nc, 2, 142123, 1, 5, 1);
     addToNanocube(nc, 2, 142123, 15, 5, 1);
+    addToNanocube(nc, 10, 123, 1, 5, 1);
     printf("Added to the nanocube!\n");
     printNanocube(nc);
 

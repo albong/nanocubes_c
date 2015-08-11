@@ -9,6 +9,8 @@ typedef struct Nanocube {
     NcDataType *dimensions; //array - can we remove this and just use the below?
     size_t numSpatialDim;
     size_t numCategoricalDim;
+    unsigned long long dataCount;
+    unsigned long long memCount;
 } Nanocube;
 
 Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim);

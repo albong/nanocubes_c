@@ -26,6 +26,10 @@ Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim){
             result->dimensions[i] = CAT;
         }
     }
+
+    result->dataCount = 0;
+    result->memCount = 0;
+
     return result; 
 }
 
@@ -71,6 +75,7 @@ void addToNanocube(Nanocube *nc, size_t time, unsigned long long count, ...){
     size_t numUpdated = 0;
     addGeo(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
     freeData(data);
+    nc->dataCount++;
 }
 
 void addArraysToNanocube(Nanocube *nc, unsigned long long *x, unsigned long long *y, unsigned long long *cat, size_t time, unsigned long long count){
@@ -100,6 +105,7 @@ void addArraysToNanocube(Nanocube *nc, unsigned long long *x, unsigned long long
     size_t numUpdated = 0;
     addGeo(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
     freeData(data);
+    nc->dataCount++;
 }
 
 void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
@@ -168,7 +174,7 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
     */
     CatData *cd = (CatData *)(getDataAtInd(data, dim-1)->data);
     NcValueChain *chain = createCatChain(cd->category);
-    NcNode *curr;
+    NcNode *curr = root;
     int update;
 
     NcNode *nodes[2];
@@ -176,7 +182,7 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
     size_t childInd = getMatchingChildInd(root, chain, 0, CAT);
     if (childInd == ((size_t)-1)){
         nodes[0] = newProperCatChild(root, chain, 0); //replace the stuff here with childless cat stuff
-    } else if (checkShared(curr->linkShared, childInd+1)){
+    } else if (checkShared(curr->linkShared, childInd)){
         nodes[0] = replaceChild(root, childInd, 1);
     } else {
         nodes[0] = root->children[childInd];
@@ -232,7 +238,6 @@ NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values, i
     NcNode *curr = root;
     NcNode *child = NULL;
     size_t childInd = -1;
-
     size_t i;
     for (i = 0; i < values->num; i++){
         if (nc->dimensions[dim-1] == GEO){
@@ -244,7 +249,7 @@ NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values, i
         if (childInd == ((size_t)-1)){
             child = newProperChild(curr, values, i);
         } else if (checkShared(curr->linkShared, childInd)){
-            child = replaceChild(curr, childInd+1, 0);
+            child = replaceChild(curr, childInd, 0);
         } else {
             child = curr->children[childInd];
         }
@@ -257,6 +262,7 @@ NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values, i
 void printNanocube(Nanocube *self){
     printf("Num spatial dimensions: %d\n", self->numSpatialDim);//size_t is not a %d
     printf("Num categorical dimensions: %d\n", self->numCategoricalDim);//size_t is not a %d
+    printf("Num data points: %zu\n", self->dataCount);
     NcNode *curr = self->root;
     printNode(curr, 0, 0, 0, self, 0);
 }

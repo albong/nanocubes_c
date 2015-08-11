@@ -4,6 +4,7 @@
 
 Timeseries *newTimeseries(){
     Timeseries *result = malloc(sizeof(Timeseries));
+    addMemToCount(sizeof(unsigned long long) * 3);
     result->bins = NULL;
     result->numBins = 0;
     result->startBin = -1;
@@ -49,10 +50,12 @@ void printTimeseries(Timeseries *self){
 
 Timeseries *deepCopyTimeseries(Timeseries *self){
     Timeseries *copy = malloc(sizeof(Timeseries));
+    addMemToCount(sizeof(unsigned long long) * 3);
 
     copy->startBin = self->startBin;
     copy->numBins = self->numBins;
     copy->bins = malloc(sizeof(unsigned long long) * copy->numBins);
+    addMemToCount(sizeof(unsigned long long) * copy->numBins);
     size_t i;
     for (i = copy->startBin; i < (copy->startBin + copy->numBins); i++){
         copy->bins[i] = self->bins[i];
