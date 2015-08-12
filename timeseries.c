@@ -54,7 +54,7 @@ void printTimeseries(Timeseries *self){
     }
 
     int i;
-    printf("startBin: %d; numBins: %d; ", self->startBin, self->numBins);
+    printf("%p - startBin: %d; numBins: %d; ", self, self->startBin, self->numBins);
     for (i = self->startBin; i < (self->startBin + self->numBins); i++){
         printf("%d:%llu ", i, self->bins[i - self->startBin]);
     }

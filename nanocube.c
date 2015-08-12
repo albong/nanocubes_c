@@ -301,6 +301,12 @@ void printNode(NcNode *self, int padding, int isShared, int isContent, Nanocube 
         }
     }
 
+    if (checkShared(self->linkShared, 0)){
+        printf("S - ");
+    } else {
+        printf("P - ");
+    }
+
     if (dim != (nc->numSpatialDim + nc->numCategoricalDim) - 1){
         printNode(self->content.node, padding+1, checkShared(self->linkShared, 0), 1, nc, dim+1);
     } else {

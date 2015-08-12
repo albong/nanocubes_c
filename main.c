@@ -104,7 +104,11 @@ void test(){
     //addToNanocube(nc, 1, 5, 1, 2);
     //addToNanocube(nc, 2, 142123, 1, 5, 1);
     addToNanocube(nc, 10, 123, 1, 5, 1);
+    printNanocube(nc);
+    printf("\n\n");
     addToNanocube(nc, 2, 142123, 15, 5, 1);
+    printNanocube(nc);
+    printf("\n\n");
     addToNanocube(nc, 5, 789, 15, 5, 1);
     printf("Added to the nanocube!\n");
     printNanocube(nc);
@@ -191,8 +195,8 @@ int main(int argc, char *argv[]){
        readIn(nc);
        printNanocube(nc);
     } else {
-//        test();
-        test2();
+        test();
+//        test2();
 //        timeseriesTest();
     }
 

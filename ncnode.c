@@ -2,6 +2,7 @@
 #include "ncmem.h"
 #include <stdlib.h>
 #include <limits.h>
+#include <string.h>
 
 NcNode *newNcNode(NcDataType type){
     NcNode *result = malloc(sizeof(NcNode));
@@ -171,8 +172,9 @@ NcNode *shallowCopyNode(NcNode *self){
         setShared(copy->linkShared, 0, 1);
     }
 
-    copy->children = self->children;
     copy->numChildren = self->numChildren;
+    copy->children = malloc(sizeof(NcNode *) * self->numChildren);
+    memcpy(copy->children, self->children, sizeof(NcNode *) * self->numChildren);
     int i;
     for (i = 0; i < self->numChildren; i++){
         setShared(copy->linkShared, i + 1, 1);
