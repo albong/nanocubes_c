@@ -14,6 +14,7 @@ void usage(){
     printf("\t-g\tThe number of geographic dimensions\n");
     printf("\t-c\tThe number of categorical dimensions\n");
     printf("\t-p\tThe port to query the nanocube on\n");
+    printf("\t-d\tThe depth of the geographic dimensions of the nanocube\n");
 }
 
 void help(){
@@ -59,6 +60,9 @@ void readIn(Nanocube *nc){
                     printf("SUCCESS\n");
                     printf("%d, %d\n", x[0], y[0]);
                     addArraysToNanocube(nc, x, y, cat, time, count);
+                    if (nc->dataCount % 1000 == 0){
+                        printMemUsage(nc);
+                    }
                 }
                 break;
             } else if (lineBuffer[i] == DELIMITER){
@@ -99,7 +103,7 @@ void readIn(Nanocube *nc){
 
 void test(){
     printf("Start\n");
-    Nanocube *nc = newNanocube(1, 1);
+    Nanocube *nc = newNanocube(1, 1, 5);
     printf("Made a nanocube!\n");
     //addToNanocube(nc, 1, 5, 1, 2);
     //addToNanocube(nc, 2, 142123, 1, 5, 1);
@@ -130,7 +134,8 @@ void test(){
 }
 
 void test2(){
-    Nanocube *nc = newNanocube(1, 1);
+    Nanocube *nc = newNanocube(1, 1, 5);
+    nc->maxDepth = 5;
     addToNanocube(nc, 2, 3, 15, 5, 1);
 //    printNanocube(nc);
 //    printf("\n\n");
@@ -160,14 +165,18 @@ int main(int argc, char *argv[]){
     int opt;
     int numGeo = -1;
     int numCat = -1;
+    int maxDepth = 25;
     
-    while ((opt = getopt(argc, argv, "g:c:h")) != -1) {
+    while ((opt = getopt(argc, argv, "g:c:d:h")) != -1) {
         switch (opt){
             case 'g':
                 numGeo = atoi(optarg);
                 break;
             case 'c':
                 numCat = atoi(optarg);
+                break;
+            case 'd':
+                maxDepth = atoi(optarg);
                 break;
             case 'h':
                 usage();
@@ -188,10 +197,14 @@ int main(int argc, char *argv[]){
         printf("Need at least one geographic dimension\n");
         usage();
         return 1;
+    } else if (maxDepth <= 0){
+        printf("Depth should not be negative\n");
+        usage();
+        return 1;
     }
 
     if (!TEST){
-       Nanocube *nc = newNanocube(numGeo, numCat);
+       Nanocube *nc = newNanocube(numGeo, numCat, maxDepth);
        readIn(nc);
        printNanocube(nc);
     } else {

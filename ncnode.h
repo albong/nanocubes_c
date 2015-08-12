@@ -5,8 +5,6 @@
 #include "ncdata.h"
 #include "nckey.h"
 
-#define MAX_GEO_DEPTH 5
-
 typedef struct NcNode {
     unsigned char *key;
     union {

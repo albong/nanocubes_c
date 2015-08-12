@@ -9,7 +9,7 @@
 static void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
 static void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
 
-Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim){
+Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim, int maxDepth){
     Nanocube *result = malloc(sizeof(Nanocube));
     int i;
     
@@ -29,6 +29,7 @@ Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim){
 
     result->dataCount = 0;
     result->memCount = 0;
+    result->maxDepth = maxDepth;
 
     return result; 
 }
@@ -42,13 +43,13 @@ void addToNanocube(Nanocube *nc, size_t time, unsigned long long count, ...){
     va_start(input, count);
     int x = va_arg(input, int);
     int y = va_arg(input, int);
-    data = newGeoData(x, y, MAX_GEO_DEPTH);
+    data = newGeoData(x, y, nc->maxDepth);
     curr = data;
     for (i = 1; i < (nc->numSpatialDim + nc->numCategoricalDim); i++){//we always must have at least one spatial dim
         if (i < nc->numSpatialDim){
             x = va_arg(input, int);
             y = va_arg(input, int);
-            curr->next = newGeoData(x, y, MAX_GEO_DEPTH);
+            curr->next = newGeoData(x, y, nc->maxDepth);
             curr = curr->next;
         } else {
             curr->next = newCatData(va_arg(input, int));
@@ -76,6 +77,7 @@ void addToNanocube(Nanocube *nc, size_t time, unsigned long long count, ...){
     addGeo(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
     freeData(data);
     nc->dataCount++;
+    nc->memCount += getMemCount();
 }
 
 void addArraysToNanocube(Nanocube *nc, unsigned long long *x, unsigned long long *y, unsigned long long *cat, size_t time, unsigned long long count){
@@ -84,12 +86,12 @@ void addArraysToNanocube(Nanocube *nc, unsigned long long *x, unsigned long long
     NcData *data;
     NcData *curr;
 
-    data = newGeoData(x[0], y[0], MAX_GEO_DEPTH);
+    data = newGeoData(x[0], y[0], nc->maxDepth);
     curr = data;
 
     //add the geodata
     for (i = 1; i < nc->numSpatialDim; i++){
-        curr->next = newGeoData(x[i], y[i], MAX_GEO_DEPTH);
+        curr->next = newGeoData(x[i], y[i], nc->maxDepth);
         curr = curr->next;
     }
 
@@ -106,6 +108,7 @@ void addArraysToNanocube(Nanocube *nc, unsigned long long *x, unsigned long long
     addGeo(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
     freeData(data);
     nc->dataCount++;
+    nc->memCount += getMemCount();
 }
 
 void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
@@ -262,7 +265,7 @@ NcNodeStack *trailProperPath(Nanocube *nc, NcNode *root, NcValueChain *values, i
 void printNanocube(Nanocube *self){
     printf("Num spatial dimensions: %d\n", self->numSpatialDim);//size_t is not a %d
     printf("Num categorical dimensions: %d\n", self->numCategoricalDim);//size_t is not a %d
-    printf("Num data points: %zu\n", self->dataCount);
+    printMemUsage(self);
     NcNode *curr = self->root;
     printNode(curr, 0, 0, 0, self, 0);
 }
@@ -322,5 +325,26 @@ void printStack(NcNodeStack *self, Nanocube *nc, int dim){
         printNode(curr->node, 0, 0, 0, nc, dim);
         curr = curr->next;
     }
+}
+
+void printMemUsage(Nanocube *self){
+    char suffix;
+    int mem;
+
+    if (self->memCount >= 1073741824){
+        suffix = 'G';
+        mem = self->memCount / 1073741824;
+    } else if (self->memCount >= 1048576){
+        suffix = 'M';
+        mem = self->memCount / 1048576;
+    } else if (self->memCount >= 1024){
+        suffix = 'K';
+        mem = self->memCount / 1024;
+    } else {
+        suffix = ' ';
+        mem = self->memCount;
+    }
+
+    printf("Count: %llu, memory: %d%c\n", self->dataCount, mem, suffix);
 }
 

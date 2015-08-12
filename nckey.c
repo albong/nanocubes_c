@@ -1,4 +1,5 @@
 #include "nckey.h"
+#include "ncmem.h"
 #include <stdlib.h>
 #include <limits.h>
 

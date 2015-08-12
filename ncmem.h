@@ -5,6 +5,5 @@
 
 void addMemToCount(size_t count);
 unsigned long long getMemCount();
-void clearMemCount();
 
 #endif

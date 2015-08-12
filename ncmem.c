@@ -7,10 +7,8 @@ void addMemToCount(size_t count){
 }
 
 unsigned long long getMemCount(){
-    return BYTE_COUNT;
-}
-
-void clearMemCount(){
+    unsigned long long result = BYTE_COUNT;
     BYTE_COUNT = 0;
+    return result;
 }
 
