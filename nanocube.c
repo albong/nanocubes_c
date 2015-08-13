@@ -6,8 +6,8 @@
 
 #include "nckey.h"
 
-static void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
-static void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated);
+static void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode ***updatedList, size_t *numUpdated);
+static void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode ***updatedList, size_t *numUpdated);
 
 Nanocube *newNanocube(size_t numSpatialDim, size_t numCategoricalDim, int maxDepth){
     Nanocube *result = malloc(sizeof(Nanocube));
@@ -74,8 +74,10 @@ void addToNanocube(Nanocube *nc, size_t time, unsigned long long count, ...){
     }
 */
     size_t numUpdated = 0;
-    addGeo(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
+    NcNode **updatedList = NULL;
+    addGeo(nc, nc->root, data, 1, &updatedList, &numUpdated);//fix the dim shenangians to be 0 indexed?
     freeData(data);
+    free(updatedList);
     nc->dataCount++;
     nc->memCount += getMemCount();
 }
@@ -105,13 +107,15 @@ void addArraysToNanocube(Nanocube *nc, unsigned long long *x, unsigned long long
     curr->next = newTimeData(time, count);
 
     size_t numUpdated = 0;
-    addGeo(nc, nc->root, data, 1, NULL, &numUpdated);//fix the dim shenangians to be 0 indexed?
+    NcNode **updatedList = NULL;
+    addGeo(nc, nc->root, data, 1, &updatedList, &numUpdated);//fix the dim shenangians to be 0 indexed?
     freeData(data);
+    free(updatedList);
     nc->dataCount++;
     nc->memCount += getMemCount();
 }
 
-void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
+void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode ***updatedList, size_t *numUpdated){
     GeoData *gd = (GeoData *)(getDataAtInd(data, dim-1)->data);
     NcValueChain *chain = createGeoChain(gd->x, gd->y, gd->z);
     NcNodeStack *stack = trailProperPath(nc, root, chain, dim);
@@ -139,7 +143,7 @@ void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
             }
             setShared(curr->linkShared, 0, 0);
             update = 1;
-        } else if (checkShared(curr->linkShared, 0) && !nodeInList(curr, updatedList, *numUpdated)) {
+        } else if (checkShared(curr->linkShared, 0) && !nodeInList(curr, *updatedList, *numUpdated)) {
             if (dim < (nc->numSpatialDim + nc->numCategoricalDim)){
                 curr->content.node = shallowCopyNode(curr->content.node);
             } else {
@@ -160,8 +164,8 @@ void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
                 addCat(nc, curr->content.node, data, dim+1, updatedList, numUpdated);
             }
             (*numUpdated)++;
-            updatedList = realloc(updatedList, sizeof(NcNode *) * (*numUpdated));
-            updatedList[(*numUpdated)-1] = curr->content.node;
+            *updatedList = realloc(*updatedList, sizeof(NcNode *) * (*numUpdated));
+            (*updatedList)[(*numUpdated)-1] = curr->content.node;
         }
         child = curr;
     }
@@ -171,7 +175,7 @@ void addGeo(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
     freeStack(stack);
 }
 
-void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedList, size_t *numUpdated){
+void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode ***updatedList, size_t *numUpdated){
     /*
     As there can only be one level of categorical data, we've optimized to take advantage of this
     */
@@ -207,7 +211,7 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
             }
             setShared(curr->linkShared, 0, 0);
             update = 1;
-        } else if (checkShared(curr->linkShared, 0) && !nodeInList(curr, updatedList, *numUpdated)){
+        } else if (checkShared(curr->linkShared, 0) && !nodeInList(curr, *updatedList, *numUpdated)){
             if (dim < (nc->numSpatialDim + nc->numCategoricalDim)){
                 curr->content.node = shallowCopyNode(curr->content.node);
             } else {
@@ -226,8 +230,8 @@ void addCat(Nanocube *nc, NcNode *root, NcData *data, int dim, NcNode **updatedL
                 addCat(nc, curr->content.node, data, dim+1, updatedList, numUpdated);
             }
             (*numUpdated)++;
-            updatedList = realloc(updatedList, sizeof(NcNode *) * (*numUpdated));
-            updatedList[(*numUpdated)-1] = curr->content.node;
+            *updatedList = realloc(*updatedList, sizeof(NcNode *) * (*numUpdated));
+            (*updatedList)[(*numUpdated)-1] = curr->content.node;
         }
     }
 
